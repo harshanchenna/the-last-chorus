@@ -49,6 +49,7 @@ Toggle with `` ` `` then type `help`. Available: `teleport <x> <y>`, `spawn <ene
 
 ## Project docs
 
+- [`AGENTS.md`](./AGENTS.md) — operating manual for any coding agent (Claude Code, Codex, …)
 - [`DESIGN.md`](./DESIGN.md) — world bible & design decisions
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md) — how the code is organized and why
 - [`ASSETS.md`](./ASSETS.md) — drop-in-ready art/audio specs

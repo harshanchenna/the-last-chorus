@@ -47,3 +47,34 @@ things that matter most are deterministically testable.
 
 **Next** → M1 game feel: tune movement/dash until it feels _good_, add a WebAudio tone backend so
 placeholder stems are audible, gamepad support, and a combat dummy to hit. See TODO.md.
+
+---
+
+## 2026-06-18 — Cycle 1: M1 game feel (movement, audio, gamepad) + agent docs
+
+**Built**
+
+- **M1a — feel:** replaced instant velocity with an acceleration/friction momentum model in the pure
+  `systems/movement.ts` (accelerate toward target, snappier friction stop; dash still pops instantly
+  and its momentum bleeds off through cooldown). Added fading dash afterimage ghosts (light-trail).
+- **M1b — audio + input:** `WebAudioToneBackend` synthesizes each ambient stem as an oscillator
+  (per-zone root pitch for identity; base/melody/tension = sine/triangle/saw), so the reactive
+  base→melody→tension crossfade is now _audible_; resumes AudioContext on first gesture. `InputManager`
+  now folds a gamepad (left stick + d-pad, A=dash, B=interact) into the same `MoveInput` snapshot;
+  gamepad enabled in the Phaser config.
+- **Agent docs:** added `AGENTS.md` as the canonical, tool-agnostic operating manual (Claude Code +
+  Codex + others) and slimmed `CLAUDE.md` to point at it, so any agent picks up the same rules.
+
+**Why**
+
+Feel is the sacred M1 foundation (seed M1) — over-invest here. Keeping the momentum model in the pure
+module means it stays test-backed while we tune. Pillar 2 wants audio to be a _hearable_ system, not
+just state. A single `AGENTS.md` avoids two agent docs drifting apart.
+
+**Verified**
+
+- `npm test` → 32 passing (movement specs updated for the accel model).
+- `npm run build` → strict tsc + Vite bundle clean. `npm run lint` → clean.
+
+**Next** → finish M1: camera deadzone/lookahead tuning + a placeholder combat dummy to hit, then begin
+M2 (combat core: melee + ranged light attack, enemy telegraph AI, damage/death/respawn).
