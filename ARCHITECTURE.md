@@ -10,6 +10,9 @@ The project is built **data-driven** so content can be added/tuned without touch
 - **Vite** — dev server (HMR) + production bundler.
 - **Vitest** (+ jsdom available) — logic specs and the headless boot-contract smoke test.
 - **ESLint + Prettier** — lint/format.
+- **Playwright** (dev-only) — drives the real game in headless Chromium for the visual
+  playtest harness (below). Justified: it's the only way to validate that the game actually
+  _renders and plays_, which Vitest can't (Phaser/WebGL won't boot under jsdom).
 
 Dependencies are intentionally minimal. New ones get logged here with justification.
 
@@ -57,10 +60,21 @@ dev tools).
 
 ## Testing strategy
 
-`npm test` runs **pure** specs (movement, audio, save) + a **boot-contract** smoke test that asserts
-the render contract and content-layer coherence. Booting WebGL under jsdom is flaky and proves little,
-so the real boot proof is `npm run build` (full Vite/Phaser bundle) + `npm run dev`. CI-of-record =
-`npm test && npm run build && npm run lint` all green.
+`npm test` runs **pure** specs (movement, audio, save, gating) + a **boot-contract** smoke test that
+asserts the render contract and content-layer coherence. Booting WebGL under jsdom is flaky and proves
+little, so the real boot proof is `npm run build` (full Vite/Phaser bundle) + `npm run dev`.
+CI-of-record = `npm test && npm run build && npm run lint` all green.
+
+### Visual playtest harness (`playtest/`)
+
+What unit tests can't cover — does it actually render and play? — `npm run playtest` does: it boots the
+real game in headless Chromium (Playwright), drives it with real keyboard input, reads live state, and
+screenshots each beat, asserting against it. Scenarios live in `playtest/` ([`playtest/README.md`](./playtest/README.md)).
+
+The seam that keeps this honest: `GameScene.debugState()` returns a plain-data snapshot, exposed on
+`window.__lastChorus` (with the scene's `DevCommandHost`) **only when `import.meta.env.DEV`** — so the
+harness can both drive and assert, and the production build ships none of it. Same spirit as the pure
+modules: the engine stays observable for validation without leaking test hooks into shipped code.
 
 ## Decisions log
 
@@ -69,3 +83,9 @@ so the real boot proof is `npm run build` (full Vite/Phaser bundle) + `npm run d
   is the canonical "it boots" proof. Keeps tests fast and deterministic.
 - **2026-06-18** — Movement implemented as a pure state machine (`MoverState`) rather than inside the
   Player/scene, specifically so M1 feel-tuning is test-backed.
+- **2026-06-18** — Gate-passage rules extracted to a pure `systems/gating.ts` (`silence` vs `chasm`
+  kinds) so a new traversal grant (`light_dash`) is data + geometry, not engine surgery — and the rule
+  is unit-tested.
+- **2026-06-18** — Added a Playwright visual playtest harness + a DEV-only `window.__lastChorus` hook
+  (`GameScene.debugState()` / `DevCommandHost`) to validate real rendering and play feel, since Vitest
+  can't boot WebGL. The hook is gated behind `import.meta.env.DEV` so it's stripped from production.

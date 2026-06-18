@@ -282,6 +282,45 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.devConsole = new DevConsole(this);
 
     this.title();
+
+    // DEV-only hook for the visual playtest harness (playtest/): exposes a state
+    // snapshot + the dev-command host so scenarios can both drive and assert.
+    // Stripped from the production build (import.meta.env.DEV is false there).
+    if (import.meta.env.DEV) {
+      (window as unknown as { __lastChorus?: unknown }).__lastChorus = {
+        host: this as DevCommandHost,
+        state: () => this.debugState(),
+      };
+    }
+  }
+
+  /**
+   * A plain-data snapshot of live game state for the visual playtest harness
+   * (`playtest/`) to assert against — exposed on `window.__lastChorus` only in DEV
+   * (see the end of `create()`), never shipped in the production build.
+   */
+  debugState(): Record<string, unknown> {
+    return {
+      zone: this.zoneId,
+      player: { x: Math.round(this.player.position.x), y: Math.round(this.player.position.y) },
+      light: Math.round(this.player.lightValue),
+      lightFraction: Number(this.player.lightFraction.toFixed(2)),
+      isDashing: this.player.isDashing,
+      refrains: [...this.save.refrains],
+      pickups: [...this.save.pickups],
+      lore: [...this.save.lore],
+      choices: { ...this.save.choices },
+      enemies: this.enemies.length,
+      bosses: this.bosses.length,
+      gates: this.gates.map((g) => ({
+        kind: g.kind,
+        open: g.open,
+        x: Math.round(g.sprite.x),
+        y: Math.round(g.sprite.y),
+      })),
+      dialogueOpen: this.dialogue.isOpen,
+      paused: this.pauseMenu.isOpen,
+    };
   }
 
   private addEnemy(enemyId: string, x: number, y: number): void {

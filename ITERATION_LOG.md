@@ -438,3 +438,40 @@ you have to leap.
 
 **Next** → ship one real asset file end-to-end (now visually verifiable via the playtest harness), CI,
 and Glass-native enemy variety.
+
+---
+
+## 2026-06-18 — Cycle 13: visual playtest harness (validate real rendering & feel)
+
+**Built**
+
+- **`playtest/` — a Playwright harness that plays the real game.** `npm run playtest` boots the actual
+  build in headless Chromium, drives it with real keyboard input (`hold`/`dash`/`tap`), reads live
+  state, and screenshots each beat into `playtest/shots/` — then asserts. This closes the one gap unit
+  tests can't reach: _does it render and play?_ (Vitest can't boot WebGL — see ARCHITECTURE.md.)
+- **The observability seam:** `GameScene.debugState()` returns a plain-data snapshot (zone, player pos,
+  light, refrains, gates+kind+open, dialogue/pause flags…), exposed on `window.__lastChorus` together
+  with the scene's `DevCommandHost` — **only under `import.meta.env.DEV`**, so production ships none of
+  it. The harness both drives (`host(...)` → teleport/give/goto/spawn) and asserts (`state(page)`).
+- **Default scenario (`run.mjs`):** a guided tour that is also a regression check — Ashchoir spawn →
+  pick up the first Refrain by walking → spawn+melee → Glass Reliquary → the fracture **blocks a walk**
+  → gain `light_dash` → **dash across** → read the vault lore → open the journal. 13/13 checks green,
+  and the screenshots confirm biome identity (warm ash vs cold glass) and the chasm reading correctly
+  (solid void → dim shimmer once owned).
+
+**Why**
+
+The user asked to be able to _actually play/test the game with visuals_ for holistic iteration. Pure
+specs prove logic; they can't catch a black screen, an unreadable placeholder, or a gate you can't
+physically cross. A scriptable browser harness makes the play experience itself observable and
+assertable — every future cycle can now be validated end-to-end, visually.
+
+**Verified**
+
+- `npm run playtest` → 13/13 checks pass; 8 screenshots captured. `npm test` → 73 passing.
+  Build + lint clean (eslint override added for the Node+browser `playtest/*.mjs` globals).
+
+**Try it:** `npm run playtest -- --head` to watch it play; shots land in `playtest/shots/`.
+
+**Next** → ship one real asset file end-to-end (now visually verifiable), CI running test+build+lint
+(and optionally a headless playtest), and Glass-native enemy variety.

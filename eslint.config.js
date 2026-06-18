@@ -20,4 +20,21 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
+  {
+    // The playtest harness is plain Node ESM that also runs callbacks in the
+    // browser via Playwright's page.evaluate — allow both global sets.
+    files: ['playtest/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+        setTimeout: 'readonly',
+        URL: 'readonly',
+        window: 'readonly',
+        document: 'readonly',
+        localStorage: 'readonly',
+      },
+    },
+  },
 );

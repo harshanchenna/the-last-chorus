@@ -84,7 +84,9 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 - [x] A second Refrain (`light_dash`) + a path gated on it — `chasm` gate kind (pure `systems/gating`):
       a fracture in the Glass Reliquary you must **dash** across, walling off the `glass_vault` memory
 - [ ] Glass-native enemy variety; the Drowned Hymn as the no-combat traversal/puzzle region (Pillar 4)
-- [ ] CI: GitHub Action running `test + build + lint` on push
+- [x] **Visual playtest harness** (`playtest/`, Playwright): boots the real game headless, drives it
+      with real input, screenshots + asserts live state. Validates rendering & feel (`npm run playtest`)
+- [ ] CI: GitHub Action running `test + build + lint` on push (+ optionally a headless `playtest`)
 - [ ] Bundle size: `manualChunks` / slimmer Phaser build before any ship
 
 ## M5 — Vertical slice (Ashchoir)

@@ -4,11 +4,11 @@ A persistent, hand-authored 2D top-down action-adventure where **the world is a 
 Lonely, sacred, decaying — _Hyper Light Drifter_ / _Death's Door_ energy, with fast light-and-blade
 combat and reactive, stem-based audio. Not a roguelite: the world is authored, persistent, and saved.
 
-> Status: **M0–M1 complete, M2 (combat) underway** — boots to a playable bounded room: walk + dash
-> (acceleration model, light-trail, i-frames), audible reactive ambient audio, gamepad support, melee +
-> ranged light attacks, telegraphing enemies, a light-meter HUD, death + rest-point respawn, rest-point
-> save, a lore object, an FPS/latency overlay, and an in-game dev console. Everything renders on
-> programmatic placeholders; real art/audio drop in via the asset manifest later.
+> Status: **M0–M5 complete, M6 (second region & choices) in progress** — two playable regions with
+> distinct biome identity, fast light-and-blade combat, telegraphing enemies + multi-phase mini-bosses,
+> two Refrains gating exploration, relight-vs-rest altar choices, a pause/journal menu, reactive
+> stem-based audio, and a save system. Everything renders on programmatic placeholders; real art/audio
+> drop in via the asset manifest with zero gameplay-code changes. (Details below.)
 
 ## Quick start (under a minute)
 
@@ -56,13 +56,14 @@ Toggle with `` ` `` then type `help`. Available: `teleport <x> <y>`, `spawn <ene
 
 ## Scripts
 
-| Command          | What it does                                           |
-| ---------------- | ------------------------------------------------------ |
-| `npm run dev`    | Vite dev server with HMR                               |
-| `npm run build`  | Strict typecheck (`tsc`) + production bundle           |
-| `npm test`       | Vitest logic specs + headless boot-contract smoke test |
-| `npm run lint`   | ESLint + Prettier check                                |
-| `npm run format` | Auto-format with Prettier                              |
+| Command            | What it does                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------- |
+| `npm run dev`      | Vite dev server with HMR                                                                        |
+| `npm run build`    | Strict typecheck (`tsc`) + production bundle                                                    |
+| `npm test`         | Vitest logic specs + headless boot-contract smoke test                                          |
+| `npm run playtest` | Drive the real game in a headless browser, screenshot + assert (see [`playtest/`](./playtest/)) |
+| `npm run lint`     | ESLint + Prettier check                                                                         |
+| `npm run format`   | Auto-format with Prettier                                                                       |
 
 ## Project docs
 

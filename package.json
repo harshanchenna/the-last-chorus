@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke": "vitest run src/test/smoke.test.ts",
+    "playtest": "node playtest/run.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write ."
   },
@@ -22,6 +23,7 @@
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",
     "jsdom": "^25.0.0",
+    "playwright": "^1.61.0",
     "prettier": "^3.3.0",
     "typescript": "^5.5.0",
     "typescript-eslint": "^8.0.0",
