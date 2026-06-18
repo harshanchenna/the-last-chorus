@@ -13,10 +13,31 @@ import {
   generateMote,
 } from '../assets/placeholders';
 import { ZONES, STARTING_ZONE } from '../data/zones';
+import { spritesToLoad, audioToLoad } from '../assets/loader';
 
 export class BootScene extends Phaser.Scene {
   constructor() {
     super('Boot');
+  }
+
+  /**
+   * Load any REAL assets the manifest points at (entries with a non-null `file`).
+   * Anything still null is generated as a placeholder in create(). This is the
+   * drop-in path: set a manifest `file` and the asset loads here — no scene change.
+   */
+  preload(): void {
+    for (const s of spritesToLoad()) {
+      this.load.spritesheet(s.key, s.file, {
+        frameWidth: s.frameWidth,
+        frameHeight: s.frameHeight,
+      });
+    }
+    for (const a of audioToLoad()) {
+      for (const [stem, file] of Object.entries(a.files)) {
+        // Layered beds register one key per stem: `<id>.<stem>`.
+        this.load.audio(stem === 'one_shot' ? a.key : `${a.key}.${stem}`, file);
+      }
+    }
   }
 
   create(): void {

@@ -75,9 +75,11 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 - [x] The relight-vs-rest choice at a god's altar — bittersweet, no good/evil meter (Pillar 5);
       persists via save v3 (`defeatedBosses` + `choices`)
 - [x] Pause/inventory journal (collected lore + Refrains + choices made); freezes the game (P / Esc)
+- [x] Real-asset pipeline: `BootScene.preload()` loads any manifest entry with a non-null `file`
+      (`assets/loader.ts`); placeholder→real swap is a one-line manifest edit, unit-tested
 - [ ] Flesh out the Glass Reliquary as a contrasting region (cold, memory, low-swarm) with its own foes
 - [ ] Dialogue system (reuse `DialoguePanel`) + a rare NPC/wisp
-- [ ] Begin real-asset swap: wire one real sprite/audio file through the manifest to prove the pipeline
+- [ ] Ship one actual real asset file (sprite/audio) end-to-end to close the loop visually
 
 ## M5 — Vertical slice (Ashchoir)
 

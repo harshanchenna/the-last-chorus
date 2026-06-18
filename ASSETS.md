@@ -6,6 +6,21 @@ a file to the spec below, point the manifest entry's `file` at it, and it drops 
 gameplay-code changes** (seed §8). **Match the frame dimensions and animation/stem names exactly — those
 are the contract.**
 
+## How to drop in a real asset (zero gameplay-code changes)
+
+1. Produce a file to the spec below and put it under `public/assets/` (Vite serves `public/` at the
+   web root, so the manifest path is e.g. `assets/enemy_ashling.png`).
+2. In [`src/assets/manifest.ts`](./src/assets/manifest.ts), set that entry's `file` from `null` to the
+   path. For a sprite, the `frame` w/h must match the file's frame size.
+3. Done. `BootScene.preload()` loads every manifest entry with a non-null `file`
+   (`src/assets/loader.ts` plans the load list); entries still `null` fall back to programmatic
+   placeholders. No scene or gameplay code changes.
+
+For a **layered ambient bed**, set one base path (e.g. `assets/zone_ashchoir_ambient.ogg`); the loader
+derives the three stem files by suffix: `..._base.ogg`, `..._melody.ogg`, `..._tension.ogg`, and
+registers them as `zone.ashchoir.ambient.base` etc. A `one_shot` track loads as a single file under its
+own key. (This swap behavior is unit-tested in `src/test/loader.test.ts`.)
+
 ## Format summary
 
 - **Images:** PNG-24, transparent where noted, **no anti-aliasing**, authored at 1× on a **16px grid**.

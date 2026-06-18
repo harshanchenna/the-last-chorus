@@ -310,3 +310,33 @@ to see it without leaving the world. It also makes the persistent save legible i
 
 **Next** → flesh out the Glass Reliquary as a contrasting second region (cold/memory, low-swarm) with
 its own foes + altar, a rare wisp NPC + dialogue, and the first real-asset swap through the manifest.
+
+---
+
+## 2026-06-18 — Cycle 9: M6c — real-asset loader pipeline (de-risking seed §8)
+
+**Built**
+
+- Closed the gap in the placeholder-first promise: until now nothing actually _loaded_ a real file, so
+  "drop a file + one-line manifest edit = zero gameplay-code changes" was unverified. Added
+  `assets/loader.ts` (pure) that plans the load list from the manifest — sprites/audio with a non-null
+  `file` — and wired `BootScene.preload()` to load them via Phaser. Entries still `null` fall back to
+  programmatic placeholders (that path already existed).
+- Layered ambient beds: one base path in the manifest, the loader derives the three stem files by
+  suffix (`..._base/_melody/_tension`) and registers them as `<id>.<stem>` keys; `one_shot` tracks load
+  as a single file. Matches the asset-spec naming contract.
+- Documented the exact 3-step swap procedure in `ASSETS.md`.
+
+**Why**
+
+The whole project rests on the placeholder-first pipeline (seed §8, "critical"). Making the real-load
+path real + unit-tested means an artist/audio drop-in genuinely needs no code change — the core
+architectural promise is now verified, not aspirational.
+
+**Verified**
+
+- `npm test` → 66 passing (loader 4 added: skips placeholders, derives stem files, one-shots, and a
+  guard that the shipped manifest is still all-placeholder). Build + lint clean. Boots HTTP 200.
+
+**Next** → the Glass Reliquary as a contrasting region (own foes + altar), a rare wisp NPC + dialogue,
+then ship one actual asset file end-to-end to close the loop visually.
