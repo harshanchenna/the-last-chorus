@@ -60,6 +60,14 @@ export interface EnemySpawn {
   y: number;
 }
 
+/** A placed NPC (rare, quiet figure). */
+export interface NpcSpawn {
+  id: string;
+  x: number;
+  y: number;
+  npcId: string;
+}
+
 /**
  * A god's altar: after the region's boss falls, the player chooses to **relight**
  * the sleeping god or **let it rest** — a real moral weight, never good/evil
@@ -99,6 +107,7 @@ export interface ZoneDef {
   refrainPickups: RefrainPickup[];
   bosses: BossSpawn[];
   enemySpawns: EnemySpawn[];
+  npcs: NpcSpawn[];
   /** Optional god's altar (relight-vs-rest choice). */
   altar?: Altar;
   /** AudioDirector zone id for the ambient stem set. */
@@ -138,6 +147,7 @@ export const ZONES: Record<string, ZoneDef> = {
       { enemyId: 'ashling', x: 660, y: 330 },
       { enemyId: 'reliquary_warden', x: 700, y: 272 },
     ],
+    npcs: [],
     altar: {
       id: 'ashchoir.dais',
       x: 800,
@@ -167,6 +177,8 @@ export const ZONES: Record<string, ZoneDef> = {
     refrainPickups: [],
     bosses: [],
     enemySpawns: [{ enemyId: 'reliquary_warden', x: 520, y: 300 }],
+    // A rare, haunting figure near the western approach.
+    npcs: [{ id: 'glass.wisp', x: 140, y: 180, npcId: 'glass_wisp' }],
     ambientId: 'glass_reliquary',
   },
   drowned_hymn: {
@@ -186,6 +198,7 @@ export const ZONES: Record<string, ZoneDef> = {
     bosses: [],
     // A traversal/atmosphere zone — minimal fighting honours Pillar 4 (seed §3).
     enemySpawns: [],
+    npcs: [],
     ambientId: 'drowned_hymn',
   },
 };

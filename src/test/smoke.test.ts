@@ -16,6 +16,7 @@ import { ENEMIES } from '../data/enemies';
 import { REFRAINS } from '../data/refrains';
 import { LORE } from '../data/lore';
 import { BOSSES } from '../data/bosses';
+import { NPCS } from '../data/npcs';
 
 describe('render contract', () => {
   it('matches the asset spec internal resolution (480×270, 16px tiles)', () => {
@@ -123,6 +124,14 @@ describe('content integrity', () => {
         const sorted = [...thresholds].sort((a, b) => b - a);
         expect(thresholds).toEqual(sorted);
         expect(thresholds[thresholds.length - 1]).toBe(0);
+      }
+    }
+  });
+
+  it('every placed NPC references a real npc def', () => {
+    for (const z of Object.values(ZONES)) {
+      for (const n of z.npcs) {
+        expect(NPCS[n.npcId], `${z.id} npc ${n.npcId}`).toBeDefined();
       }
     }
   });

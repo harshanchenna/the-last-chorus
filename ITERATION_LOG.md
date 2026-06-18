@@ -340,3 +340,33 @@ architectural promise is now verified, not aspirational.
 
 **Next** → the Glass Reliquary as a contrasting region (own foes + altar), a rare wisp NPC + dialogue,
 then ship one actual asset file end-to-end to close the loop visually.
+
+---
+
+## 2026-06-18 — Cycle 10: M6d — dialogue system + a rare wisp NPC
+
+**Built**
+
+- A **multi-line dialogue system**: `startDialogue(title, lines)` shows lines one at a time and Interact
+  advances (then closes). Lore and altar epitaphs now route through it too, so all in-world text shares
+  one path.
+- `data/npcs.ts` + a placed **wisp** in the Glass Reliquary — a rare, quiet figure (asset spec §3.3)
+  that shimmers faintly and speaks four bittersweet fragments about being a forgotten verse (Pillar 1:
+  atmosphere, never exposition). NPC sprite added to the manifest (placeholder-ready).
+- Content guard: every placed NPC references a real def.
+
+**Why**
+
+M6's dialogue system + the first NPC give the world a voice without breaking the "no exposition dumps"
+rule — short fragments, advanced at the player's pace, from a figure who is itself a piece of the
+unraveling.
+
+**Verified**
+
+- `npm test` → 67 passing (NPC content guard added). Build + lint clean. Boots HTTP 200.
+
+**Try it:** `goto glass_reliquary` (or cross east through Ashchoir) and press `E` by the pale wisp near
+the western wall.
+
+**Next** → give the Glass Reliquary its own boss + altar (a god of memory) to make it a full second
+region, then ship one real asset file end-to-end.

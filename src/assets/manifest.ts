@@ -88,6 +88,14 @@ export const SPRITES: Record<string, SpriteAsset> = {
     color: 0xe0a85a,
     file: null,
   },
+  'npc.wisp': {
+    kind: 'sprite',
+    id: 'npc.wisp',
+    frame: { w: 32, h: 32 },
+    anims: { idle: 6 },
+    color: 0xbfe6ff,
+    file: null,
+  },
 };
 
 /**

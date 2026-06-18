@@ -12,6 +12,7 @@
 import Phaser from 'phaser';
 import { getZone, ZONES, STARTING_ZONE } from '../data/zones';
 import { getLore } from '../data/lore';
+import { getNpc } from '../data/npcs';
 import { getRefrain } from '../data/refrains';
 import { ENEMIES, getEnemy } from '../data/enemies';
 import { Player } from '../entities/Player';
@@ -67,6 +68,11 @@ interface PickupObj {
   def: RefrainPickup;
 }
 
+interface NpcObj {
+  sprite: Phaser.GameObjects.Sprite;
+  npcId: string;
+}
+
 interface Projectile {
   sprite: Phaser.GameObjects.Arc;
   vx: number;
@@ -94,6 +100,11 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private exits: ZoneExitObj[] = [];
   private gates: GateObj[] = [];
   private pickups: PickupObj[] = [];
+  private npcEntities: NpcObj[] = [];
+  // Active multi-line dialogue sequence (NPC/lore), advanced with Interact.
+  private dialogueLines: string[] = [];
+  private dialogueIdx = 0;
+  private dialogueTitle = '';
   private transitioning = false;
   private enemies: Enemy[] = [];
   private bosses: Boss[] = [];
@@ -195,6 +206,21 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
         ease: 'Sine.inOut',
       });
       this.pickups.push({ sprite, def: pk });
+    }
+
+    // NPCs: rare, quiet figures. A faint, slow shimmer marks them as haunting.
+    this.npcEntities = [];
+    for (const n of zone.npcs) {
+      const sprite = this.add.sprite(n.x, n.y, 'npc.wisp').setDepth(15);
+      this.tweens.add({
+        targets: sprite,
+        alpha: 0.55,
+        yoyo: true,
+        repeat: -1,
+        duration: 1200,
+        ease: 'Sine.inOut',
+      });
+      this.npcEntities.push({ sprite, npcId: n.npcId });
     }
 
     this.enemies = [];
@@ -606,9 +632,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   }
 
   private handleInteract(): void {
-    // The same key dismisses an open lore panel.
+    // While a dialogue is open, Interact advances to the next line (or closes).
     if (this.dialogue.isOpen) {
-      this.dialogue.hide();
+      this.advanceDialogue();
       return;
     }
     // The god's altar takes priority when you're standing on it.
@@ -618,6 +644,13 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
         this.interactAltar();
         return;
       }
+    }
+    // A nearby NPC speaks (rare, quiet figures — Pillar 1).
+    const npc = this.nearestNpc(26);
+    if (npc) {
+      const def = getNpc(npc.npcId);
+      this.startDialogue(def.name, def.lines);
+      return;
     }
     const near = this.nearestInteractable(24);
     if (!near) return;
@@ -632,8 +665,39 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     } else {
       const lore = getLore(near.refId);
       if (!this.save.lore.includes(lore.id)) this.save.lore.push(lore.id);
-      this.dialogue.show(lore.title, lore.text);
+      this.startDialogue(lore.title, [lore.text]);
     }
+  }
+
+  /** Begin a multi-line dialogue sequence; Interact advances it. */
+  private startDialogue(title: string, lines: string[]): void {
+    this.dialogueTitle = title;
+    this.dialogueLines = lines.length > 0 ? lines : [''];
+    this.dialogueIdx = 0;
+    this.dialogue.show(title, this.dialogueLines[0]!);
+  }
+
+  private advanceDialogue(): void {
+    this.dialogueIdx++;
+    if (this.dialogueIdx < this.dialogueLines.length) {
+      this.dialogue.show(this.dialogueTitle, this.dialogueLines[this.dialogueIdx]!);
+    } else {
+      this.dialogue.hide();
+    }
+  }
+
+  private nearestNpc(radius: number): NpcObj | null {
+    const p = this.player.position;
+    let best: NpcObj | null = null;
+    let bestDist = radius;
+    for (const n of this.npcEntities) {
+      const d = Phaser.Math.Distance.Between(p.x, p.y, n.sprite.x, n.sprite.y);
+      if (d <= bestDist) {
+        best = n;
+        bestDist = d;
+      }
+    }
+    return best;
   }
 
   /** Approach the altar: show the prior choice, a locked message, or the prompt. */
@@ -641,10 +705,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     const altar = this.altar!;
     const prior = this.save.choices[altar.id];
     if (prior) {
-      this.dialogue.show(
-        prior === 'relight' ? 'Relit' : 'At Rest',
+      this.startDialogue(prior === 'relight' ? 'Relit' : 'At Rest', [
         prior === 'relight' ? altar.relightText : altar.restText,
-      );
+      ]);
       return;
     }
     if (!this.isAltarAwake()) {
@@ -673,10 +736,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.saves.save(this.save);
     this.dialogue.hide();
     this.applyChoiceEffect(choice);
-    this.dialogue.show(
-      choice === 'relight' ? 'Relit' : 'At Rest',
+    this.startDialogue(choice === 'relight' ? 'Relit' : 'At Rest', [
       choice === 'relight' ? altar.relightText : altar.restText,
-    );
+    ]);
   }
 
   /** A small, bittersweet world change either way — never good/evil (Pillar 5). */
