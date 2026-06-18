@@ -54,6 +54,10 @@ export interface ZoneDef {
   bounds: { width: number; height: number };
   /** Background color of the void (desaturated per region palette). */
   bgColor: number;
+  /** Ground/wall tile colors — each dead god's domain reads distinctly (asset spec §2). */
+  tilePalette: { ground: number; wall: number };
+  /** The signature decay visual creeping into the region, or null (asset spec §4). */
+  unraveling: 'ash' | 'glass' | 'tide' | null;
   /** Where the player starts if no save exists. */
   defaultSpawn: { x: number; y: number };
   restPoints: RestPoint[];
@@ -72,6 +76,8 @@ export const ZONES: Record<string, ZoneDef> = {
     blurb: 'A smoldering cathedral-forest; embers that hum a grief they cannot finish.',
     bounds: { width: 960, height: 540 },
     bgColor: 0x1a1210,
+    tilePalette: { ground: 0x1c1512, wall: 0x4a382c },
+    unraveling: 'ash',
     defaultSpawn: { x: 240, y: 160 },
     restPoints: [{ id: 'ashchoir.first_pew', x: 200, y: 140 }],
     exits: [{ id: 'ashchoir.east', x: 920, y: 272, toZone: 'glass_reliquary' }],
@@ -92,6 +98,8 @@ export const ZONES: Record<string, ZoneDef> = {
     blurb: 'Fields of singing glass — a god of memory, shattered into brittle light.',
     bounds: { width: 960, height: 540 },
     bgColor: 0x0e1620,
+    tilePalette: { ground: 0x101a26, wall: 0x33506a },
+    unraveling: 'glass',
     defaultSpawn: { x: 240, y: 160 },
     restPoints: [{ id: 'glass.alcove', x: 220, y: 150 }],
     exits: [{ id: 'glass.west', x: 40, y: 272, toZone: 'ashchoir' }],
@@ -106,6 +114,8 @@ export const ZONES: Record<string, ZoneDef> = {
     blurb: 'Flooded ruins where the tide still keeps time for a god that no longer breathes.',
     bounds: { width: 960, height: 540 },
     bgColor: 0x0a1414,
+    tilePalette: { ground: 0x0a1618, wall: 0x244a4a },
+    unraveling: 'tide',
     defaultSpawn: { x: 240, y: 160 },
     restPoints: [{ id: 'drowned.bell', x: 220, y: 150 }],
     exits: [],

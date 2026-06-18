@@ -8,16 +8,15 @@
 
 import Phaser from 'phaser';
 import { TILE } from './mapgen';
-import { TILESET_KEY } from '../assets/placeholders';
 
 export class ZoneMap {
   readonly layer: Phaser.Tilemaps.TilemapLayer;
   readonly widthPx: number;
   readonly heightPx: number;
 
-  constructor(scene: Phaser.Scene, grid: number[][], tileSize = 16) {
+  constructor(scene: Phaser.Scene, grid: number[][], tilesetKey: string, tileSize = 16) {
     const map = scene.make.tilemap({ data: grid, tileWidth: tileSize, tileHeight: tileSize });
-    const tileset = map.addTilesetImage(TILESET_KEY, TILESET_KEY, tileSize, tileSize, 0, 0);
+    const tileset = map.addTilesetImage(tilesetKey, tilesetKey, tileSize, tileSize, 0, 0);
     if (!tileset) throw new Error('tileset image missing — generateTileset() not run?');
     const layer = map.createLayer(0, tileset, 0, 0);
     if (!layer) throw new Error('failed to create tilemap layer');

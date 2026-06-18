@@ -24,8 +24,10 @@ import { SaveSystem, defaultSave, type SaveData } from '../core/SaveSystem';
 import { Hud } from '../ui/Hud';
 import { DialoguePanel } from '../ui/DialoguePanel';
 import { ZoneMap } from '../world/ZoneMap';
+import { Unraveling } from '../world/Unraveling';
 import { buildTileGrid } from '../world/mapgen';
 import { getMapSpec, TILE_SIZE } from '../data/maps';
+import { tilesetKey } from '../assets/placeholders';
 import { REST_POINT_KEY, LORE_KEY, GATE_KEY, EXIT_KEY, REFRAIN_KEY } from '../assets/placeholders';
 import type { RefrainPickup } from '../data/zones';
 import { GAME_TITLE, COMBAT } from '../core/config';
@@ -104,9 +106,17 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.cameras.main.setBackgroundColor(zone.bgColor);
 
     // Tile geometry + collision (data-driven; Tiled JSON drops in here later).
-    this.map = new ZoneMap(this, buildTileGrid(getMapSpec(this.zoneId)), TILE_SIZE);
+    this.map = new ZoneMap(
+      this,
+      buildTileGrid(getMapSpec(this.zoneId)),
+      tilesetKey(this.zoneId),
+      TILE_SIZE,
+    );
     this.physics.world.setBounds(0, 0, this.map.widthPx, this.map.heightPx);
     this.cameras.main.setBounds(0, 0, this.map.widthPx, this.map.heightPx);
+
+    // The signature unraveling overlay (ash/glass/tide) — region atmosphere.
+    new Unraveling(this, zone.unraveling);
 
     // Player.
     this.player = new Player(this, spawn.x, spawn.y, this.save.lightCapacity);

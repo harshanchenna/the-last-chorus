@@ -50,21 +50,48 @@ export function generateWorldPlaceholders(scene: Phaser.Scene): void {
   makeBlock(scene, REFRAIN_KEY, 16, 16, 0xfff2c4); // a fragment of the song (light)
 }
 
-/** Tileset placeholder: index 0 = ground, 1 = wall. Drop-in for a real tilesheet. */
-export const TILESET_KEY = 'placeholder.tiles';
+/** Per-zone tileset key: index 0 = ground, 1 = wall. Drop-in for a real tilesheet. */
+export function tilesetKey(zoneId: string): string {
+  return `placeholder.tiles.${zoneId}`;
+}
 
-export function generateTileset(scene: Phaser.Scene): void {
-  if (scene.textures.exists(TILESET_KEY)) return;
+/** A small drifting particle texture for the "unraveling" overlay. */
+export const MOTE_KEY = 'placeholder.mote';
+
+function lighten(color: number, amt: number): number {
+  return Phaser.Display.Color.IntegerToColor(color).lighten(amt).color;
+}
+function darken(color: number, amt: number): number {
+  return Phaser.Display.Color.IntegerToColor(color).darken(amt).color;
+}
+
+/** Generate a 2-tile tileset tinted to a region's palette (asset spec §2). */
+export function generateTileset(
+  scene: Phaser.Scene,
+  zoneId: string,
+  ground: number,
+  wall: number,
+): void {
+  const key = tilesetKey(zoneId);
+  if (scene.textures.exists(key)) return;
   const t = 16;
   const g = scene.make.graphics({ x: 0, y: 0 }, false);
-  // Tile 0 — ground: dark stone with a faint checker so motion reads.
-  g.fillStyle(0x161b22, 1).fillRect(0, 0, t, t);
-  g.fillStyle(0x1b212b, 1).fillRect(0, 0, t / 2, t / 2);
-  g.fillStyle(0x1b212b, 1).fillRect(t / 2, t / 2, t / 2, t / 2);
-  // Tile 1 — wall: lighter stone block with a beveled edge.
-  g.fillStyle(0x3a434f, 1).fillRect(t, 0, t, t);
-  g.fillStyle(0x4a5562, 1).fillRect(t, 0, t, 2);
-  g.fillStyle(0x262d36, 1).fillRect(t, t - 2, t, 2);
-  g.generateTexture(TILESET_KEY, t * 2, t);
+  // Tile 0 — ground: region color with a faint checker so motion reads.
+  g.fillStyle(ground, 1).fillRect(0, 0, t, t);
+  g.fillStyle(lighten(ground, 6), 1).fillRect(0, 0, t / 2, t / 2);
+  g.fillStyle(lighten(ground, 6), 1).fillRect(t / 2, t / 2, t / 2, t / 2);
+  // Tile 1 — wall: region color block with a beveled edge.
+  g.fillStyle(wall, 1).fillRect(t, 0, t, t);
+  g.fillStyle(lighten(wall, 12), 1).fillRect(t, 0, t, 2);
+  g.fillStyle(darken(wall, 25), 1).fillRect(t, t - 2, t, 2);
+  g.generateTexture(key, t * 2, t);
+  g.destroy();
+}
+
+export function generateMote(scene: Phaser.Scene): void {
+  if (scene.textures.exists(MOTE_KEY)) return;
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  g.fillStyle(0xffffff, 1).fillRect(0, 0, 2, 2);
+  g.generateTexture(MOTE_KEY, 2, 2);
   g.destroy();
 }
