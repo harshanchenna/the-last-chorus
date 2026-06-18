@@ -29,6 +29,7 @@ import { Hud } from '../ui/Hud';
 import { BossBar } from '../ui/BossBar';
 import { DialoguePanel } from '../ui/DialoguePanel';
 import { PauseMenu } from '../ui/PauseMenu';
+import { InteractPrompt, HintLine } from '../ui/Prompts';
 import { ZoneMap } from '../world/ZoneMap';
 import { Unraveling } from '../world/Unraveling';
 import { canPassGate, ownsRequirement, type GateKind } from '../systems/gating';
@@ -98,6 +99,15 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private bossBar!: BossBar;
   private dialogue!: DialoguePanel;
   private pauseMenu!: PauseMenu;
+  private interactPrompt!: InteractPrompt;
+  private hintLine!: HintLine;
+  /** First-run intro/tutorial flow (only on New Game, only in the starting zone). */
+  private intro = false;
+  private tutStep: 'prologue' | 'move' | 'dash' | 'gather' | 'cross' | 'done' = 'done';
+  private tutFrom = { x: 0, y: 0 };
+  private tutDashed = false;
+  private tutCombatShown = false;
+  private tutTimer = 0;
   private map!: ZoneMap;
   private interactables: Interactable[] = [];
   private exits: ZoneExitObj[] = [];
@@ -127,8 +137,10 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     super('Game');
   }
 
-  init(data: { zoneId?: string }): void {
+  init(data: { zoneId?: string; intro?: boolean }): void {
     this.zoneId = data.zoneId ?? STARTING_ZONE;
+    // The intro/tutorial only plays on a fresh New Game in the starting zone.
+    this.intro = (data.intro ?? false) && this.zoneId === STARTING_ZONE;
   }
 
   create(): void {
@@ -278,10 +290,24 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.bossBar = new BossBar(this);
     this.dialogue = new DialoguePanel(this);
     this.pauseMenu = new PauseMenu(this);
+    this.interactPrompt = new InteractPrompt(this);
+    this.hintLine = new HintLine(this);
     this.overlay = new DebugOverlay(this);
     this.devConsole = new DevConsole(this);
 
     this.title();
+
+    // First-run: a short atmospheric prologue, then in-world tutorial beats.
+    if (this.intro) {
+      this.tutStep = 'prologue';
+      this.tutDashed = false;
+      this.tutCombatShown = false;
+      this.startDialogue('The Last Chorus', [
+        'For a thousand years the gods sang the world entire — one endless Chorus.',
+        'Now, voice by voice, the song is failing. Where a god falls silent the world unravels — into ash, into glass, into quiet.',
+        'You are a Lantern-bearer. You carry what little of the Chorus remains, as light. Walk into the ash, and hold the last notes a while longer.',
+      ]);
+    }
 
     // DEV-only hook for the visual playtest harness (playtest/): exposes a state
     // snapshot + the dev-command host so scenarios can both drive and assert.
@@ -320,6 +346,8 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       })),
       dialogueOpen: this.dialogue.isOpen,
       paused: this.pauseMenu.isOpen,
+      intro: this.intro,
+      tutStep: this.tutStep,
     };
   }
 
@@ -400,6 +428,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     const equippedId = this.save.refrains[0];
     const equipped = equippedId ? getRefrain(equippedId).name : null;
     this.hud.update(this.player.lightFraction, this.save.refrains.length, equipped);
+
+    this.updateInteractPrompt();
+    this.updateTutorial(delta);
 
     this.overlay.markInputConsumed(!consoleOpen);
     this.overlay.setExtraLines([
@@ -725,6 +756,102 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       const lore = getLore(near.refId);
       if (!this.save.lore.includes(lore.id)) this.save.lore.push(lore.id);
       this.startDialogue(lore.title, [lore.text]);
+    }
+  }
+
+  /** Float an "E" glyph above whatever the player can interact with right now. */
+  private updateInteractPrompt(): void {
+    if (
+      this.dialogue.isOpen ||
+      this.pendingAltar ||
+      this.devConsole.isOpen ||
+      this.pauseMenu.isOpen
+    ) {
+      this.interactPrompt.hide();
+      return;
+    }
+    const p = this.player.position;
+    // Priority: an awake, undecided altar > nearby NPC > nearby rest/lore.
+    if (
+      this.altar &&
+      this.altarSprite &&
+      !this.save.choices[this.altar.id] &&
+      this.isAltarAwake()
+    ) {
+      if (Phaser.Math.Distance.Between(p.x, p.y, this.altar.x, this.altar.y) <= 22) {
+        this.interactPrompt.showAt(this.altar.x, this.altar.y - 14);
+        return;
+      }
+    }
+    const npc = this.nearestNpc(26);
+    if (npc) {
+      this.interactPrompt.showAt(npc.sprite.x, npc.sprite.y - 18);
+      return;
+    }
+    const near = this.nearestInteractable(24);
+    if (near) {
+      this.interactPrompt.showAt(near.sprite.x, near.sprite.y - 12);
+      return;
+    }
+    this.interactPrompt.hide();
+  }
+
+  /** The opening tutorial: one quiet hint per core verb, advanced by doing it. */
+  private updateTutorial(dtMs: number): void {
+    if (!this.intro || this.tutStep === 'done') return;
+    // Combat hint fires opportunistically once an enemy gets close (any step).
+    if (!this.tutCombatShown && this.tutStep !== 'prologue') {
+      const p = this.player.position;
+      const near = this.enemies.some(
+        (e) => !e.isDead && Phaser.Math.Distance.Between(p.x, p.y, e.sprite.x, e.sprite.y) < 150,
+      );
+      if (near) {
+        this.tutCombatShown = true;
+        this.flash('J — blade of light · K — sung light. Read the wind-up; dash through it.');
+      }
+    }
+    if (this.dialogue.isOpen) return; // hold the tutorial through prologue/lore
+
+    switch (this.tutStep) {
+      case 'prologue':
+        this.tutStep = 'move';
+        this.tutFrom = { ...this.player.position };
+        this.hintLine.show('Move — WASD or the arrow keys.');
+        break;
+      case 'move':
+        if (
+          Phaser.Math.Distance.Between(
+            this.tutFrom.x,
+            this.tutFrom.y,
+            this.player.position.x,
+            this.player.position.y,
+          ) > 28
+        ) {
+          this.tutStep = 'dash';
+          this.hintLine.show('Dash — Space. It carries you, with a breath of invulnerability.');
+        }
+        break;
+      case 'dash':
+        if (this.player.isDashing) this.tutDashed = true;
+        if (this.tutDashed && !this.player.isDashing) {
+          this.tutStep = 'gather';
+          this.hintLine.show('A fragment of the Chorus glimmers to the south. Gather it.');
+        }
+        break;
+      case 'gather':
+        if (this.save.refrains.length > 0) {
+          this.tutStep = 'cross';
+          this.tutTimer = 0;
+          this.hintLine.show('The silence-void will yield to the note you carry. Press east.');
+        }
+        break;
+      case 'cross':
+        this.tutTimer += dtMs;
+        if (this.tutTimer > 6500) {
+          this.tutStep = 'done';
+          this.hintLine.hide();
+        }
+        break;
     }
   }
 

@@ -501,3 +501,34 @@ the whole thing as _intro-to-the-world + tutorial + teaser_ starts here at the t
 
 **Next** → fold in the intro/atmosphere + in-world tutorial, then the demo ending that teases the
 bigger picture.
+
+---
+
+## 2026-06-18 — Cycle 15: intro prologue + in-world tutorial + interact prompts
+
+**Built**
+
+- **Atmospheric prologue** on New Game (3 short lines via the dialogue system): the failing Chorus, the
+  unraveling, and your role as a Lantern-bearer. No exposition dump (Pillar 1) — it hands straight off
+  to play. Only fires on a fresh New Game in the starting zone (`intro` flag from the title).
+- **In-world tutorial** (`updateTutorial`): one quiet hint per core verb, each advanced by _doing_ it —
+  move → dash → gather the Refrain → cross east, plus an opportunistic combat hint when an enemy nears.
+  Uses a new `ui/Prompts.HintLine` (a sparse top line).
+- **Interact prompt** (`ui/Prompts.InteractPrompt`): a floating "E" glyph above whatever you can
+  interact with right now (rest-points, lore, NPCs, awake altars) — general readability + teaches the
+  verb. Priority-ordered to match `handleInteract`.
+- `debugState()` now reports `intro` + `tutStep` so the harness can assert the flow.
+
+**Why**
+
+The MVP demo is framed as _intro-to-the-world + tutorial + teaser_. This cycle delivers the first two:
+a first-timer learns the verbs in-world and gets the mood up front, without a manual or a text wall.
+
+**Verified**
+
+- `npm run playtest` → 16/16 (added prologue + tutorial-handoff checks); screenshots confirm the
+  prologue panel and the "Move — WASD" hint with the floating E prompt above a lore object.
+  `npm test` → 73 passing. Build + lint clean.
+
+**Next** → the demo ending: resolve the arc and tease the bigger picture (the Drowned Hymn, the Chorus
+still failing), then audio SFX + transition polish.

@@ -43,6 +43,10 @@ choose **New Game** (or **Continue** if you have a save).
 > **M6 in progress** — two contrasting regions with mini-bosses + relight/rest altars, a pause/journal
 > menu, and a **second Refrain (the _Refrain of the Leap_)**: grab it in the Glass Reliquary and **dash**
 > across the shimmering fracture to reach a sealed memory-vault (a `chasm` gate — the dash is now a key).
+>
+> **Toward an MVP demo:** a **title screen**, an atmospheric **prologue**, and an in-world **tutorial**
+> (one quiet hint per verb) now frame a first-time run as _intro → tutorial → demo_, with floating
+> interact prompts for readability.
 
 ### Dev console commands
 

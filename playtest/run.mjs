@@ -48,20 +48,28 @@ try {
   check('boots to the title screen', onTitle);
   await newGame(page);
 
-  // ---- 1. Ashchoir: spawn ----
-  console.log('\n[1] Ashchoir — spawn');
+  // ---- 1. Intro prologue + tutorial hand-off ----
+  console.log('\n[1] Intro — prologue → tutorial');
   let s = await state(page);
-  await shot(page, '01-ashchoir-spawn');
+  await shot(page, '01-prologue');
+  check('new game opens the prologue', s.dialogueOpen === true && s.intro === true);
   check('boots into Ashchoir', s.zone === 'ashchoir', s.zone);
   check('starts with no Refrains', s.refrains.length === 0);
   check('starts at full light', s.lightFraction === 1, `light ${s.light}`);
+  // Advance the 3 prologue lines; it should hand off to the move tutorial hint.
+  await tap(page, 'E');
+  await tap(page, 'E');
+  await tap(page, 'E');
+  s = await state(page);
+  await shot(page, '02-tutorial-move');
+  check('prologue closes into the move hint', s.dialogueOpen === false && s.tutStep === 'move');
 
   // ---- 2. Pick up the first Refrain by walking onto it ----
   console.log('\n[2] Walk onto the Refrain of the Held Breath');
   await host(page, 'teleport', 260, 340);
   await hold(page, 'ArrowDown', 800);
   s = await state(page);
-  await shot(page, '02-refrain-picked');
+  await shot(page, '03-refrain-picked');
   check('picked up first_refrain', s.refrains.includes('first_refrain'), s.refrains.join(','));
 
   // ---- 3. Combat read: spawn an ashling and swing ----
@@ -70,7 +78,7 @@ try {
   await host(page, 'spawn', 'ashling');
   await hold(page, 'ArrowRight', 120);
   await tap(page, 'J');
-  await shot(page, '03-ashchoir-combat');
+  await shot(page, '04-ashchoir-combat');
   s = await state(page);
   check('an enemy is live for the combat read', s.enemies >= 1, `enemies ${s.enemies}`);
 
@@ -78,7 +86,7 @@ try {
   console.log('\n[4] Glass Reliquary — overview');
   await gotoZone(page, 'glass_reliquary');
   s = await state(page);
-  await shot(page, '04-glass-overview');
+  await shot(page, '05-glass-overview');
   const fracture = s.gates.find((g) => g.kind === 'chasm');
   check('has a chasm (fracture) gate', !!fracture, JSON.stringify(s.gates));
   check('fracture starts closed (no light_dash)', fracture && fracture.open === false);
@@ -88,7 +96,7 @@ try {
   await host(page, 'teleport', 700, 80);
   await hold(page, 'ArrowRight', 1000);
   s = await state(page);
-  await shot(page, '05-chasm-blocked');
+  await shot(page, '06-chasm-blocked');
   check('walking does NOT cross the fracture', s.player.x < 752, `x=${s.player.x}`);
 
   // ---- 6. Gain the Refrain of the Leap, then dash across ----
@@ -99,7 +107,7 @@ try {
   await host(page, 'teleport', 735, 80);
   await dash(page, 'ArrowRight', 420);
   s = await state(page);
-  await shot(page, '06-chasm-crossed');
+  await shot(page, '07-chasm-crossed');
   check('dash leaps the fracture into the vault', s.player.x > 768, `x=${s.player.x}`);
 
   // ---- 7. Read the vault lore beyond the fracture ----
@@ -107,7 +115,7 @@ try {
   await host(page, 'teleport', 860, 56);
   await tap(page, 'E');
   s = await state(page);
-  await shot(page, '07-vault-lore');
+  await shot(page, '08-vault-lore');
   check('vault lore collected', s.lore.includes('glass_vault'), s.lore.join(','));
   check('dialogue panel is showing it', s.dialogueOpen === true);
 
@@ -116,7 +124,7 @@ try {
   await tap(page, 'E'); // close the dialogue
   await tap(page, 'P');
   s = await state(page);
-  await shot(page, '08-journal');
+  await shot(page, '09-journal');
   check('journal freezes the game', s.paused === true);
 
   if (game.errors.length) {

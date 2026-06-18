@@ -125,7 +125,7 @@ export class TitleScene extends Phaser.Scene {
 
   private newGame(): void {
     this.saves.clear();
-    this.scene.start('Game', { zoneId: STARTING_ZONE });
+    this.scene.start('Game', { zoneId: STARTING_ZONE, intro: true });
   }
 
   private continueGame(): void {
