@@ -88,6 +88,14 @@ export const SPRITES: Record<string, SpriteAsset> = {
     color: 0xe0a85a,
     file: null,
   },
+  'enemy.reliquary_echo': {
+    kind: 'sprite',
+    id: 'enemy.reliquary_echo',
+    frame: { w: 64, h: 64 },
+    anims: { idle: 4, walk: 4, telegraph: 4, attack: 5, hurt: 2, death: 8 },
+    color: 0x9fd8e6,
+    file: null,
+  },
   'npc.wisp': {
     kind: 'sprite',
     id: 'npc.wisp',

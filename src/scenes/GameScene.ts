@@ -504,14 +504,14 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       if (id && !this.save.defeatedBosses.includes(id)) {
         this.save.defeatedBosses.push(id);
         this.saves.save(this.save);
-        this.onBossDefeated(id);
+        this.onBossDefeated(id, b.def.name);
       }
     }
     this.bosses = this.bosses.filter((b) => !b.isDead);
   }
 
-  private onBossDefeated(spawnId: string): void {
-    this.flash('The Choirmaster falls silent.');
+  private onBossDefeated(spawnId: string, name: string): void {
+    this.flash(`${name} falls silent.`);
     if (this.altar && this.altar.bossSpawnId === spawnId && this.altarSprite) {
       // The altar wakes — a soft light to draw the player to the choice.
       this.altarSprite.setAlpha(1);

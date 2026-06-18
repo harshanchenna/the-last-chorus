@@ -370,3 +370,32 @@ the western wall.
 
 **Next** → give the Glass Reliquary its own boss + altar (a god of memory) to make it a full second
 region, then ship one real asset file end-to-end.
+
+---
+
+## 2026-06-18 — Cycle 11: M6e — the Glass Reliquary as a full second region
+
+**Built**
+
+- **The Reliquary Echo** — the Glass Reliquary's mini-boss (a god of memory's last reflection), added as
+  pure data + a manifest sprite. Deliberately contrasts the Choirmaster: ranged-heavy, keeps its
+  distance, phases **Recollection → Distortion → Shatter** trading telegraph length for volley density.
+  Reuses the entire generic boss system — a new boss is a data edit, no engine change.
+- A **god-of-memory altar** in the Glass Reliquary with its own bittersweet relight-vs-rest choice, so
+  the second region has the same emotional climax as the first (Pillar 5). The boss-defeat message is
+  now generic (uses the boss's name) rather than Choirmaster-specific.
+- The existing content guards (ordered boss phases; altar→boss-exists) automatically validate the new
+  region's data.
+
+**Why**
+
+This makes the Glass Reliquary a complete contrasting second region (seed M6) rather than a connecting
+corridor — proving the architecture scales: an entire region climax (boss + multi-phase telegraphs +
+altar + choice) came from data + one manifest line.
+
+**Verified**
+
+- `npm test` → 67 passing. Build + lint clean. Boots HTTP 200.
+
+**Next** → ship one real asset file end-to-end (prove the loader path visually), add a second Refrain
+(`light_dash`) + a path gated on it, and add CI. See `HANDOFF.md` for the full pick-up guide.

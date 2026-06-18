@@ -175,10 +175,21 @@ export const ZONES: Record<string, ZoneDef> = {
     gates: [],
     loreObjects: [{ x: 300, y: 150, loreId: 'glass_reflection' }],
     refrainPickups: [],
-    bosses: [],
     enemySpawns: [{ enemyId: 'reliquary_warden', x: 520, y: 300 }],
     // A rare, haunting figure near the western approach.
     npcs: [{ id: 'glass.wisp', x: 140, y: 180, npcId: 'glass_wisp' }],
+    bosses: [{ id: 'glass.echo', x: 760, y: 272, bossId: 'reliquary_echo' }],
+    altar: {
+      id: 'glass.reliquary',
+      x: 820,
+      y: 200,
+      bossSpawnId: 'glass.echo',
+      godName: 'the god of memory',
+      relightText:
+        'You feed the reliquary your light and it remembers — every face it ever held, all at once, then none. A mercy and a cruelty in one breath.',
+      restText:
+        'You let the reflections still. The glass stops repeating. What it forgets, this time, stays forgotten — and that is its own kind of peace.',
+    },
     ambientId: 'glass_reliquary',
   },
   drowned_hymn: {

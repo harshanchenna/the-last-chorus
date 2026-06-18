@@ -61,6 +61,48 @@ export const BOSSES: Record<string, BossDef> = {
   },
 };
 
+// The Glass Reliquary's climax — a god of memory. Ranged-heavy: it fights at a
+// distance with shards of recollection, closing only as it shatters.
+BOSSES.reliquary_echo = {
+  id: 'reliquary_echo',
+  name: 'The Reliquary Echo',
+  frame: { w: 64, h: 64 },
+  maxHealth: 240,
+  damage: 16,
+  projectileDamage: 10,
+  color: 0x9fd8e6,
+  ai: {
+    aggroRange: 300,
+    attackMs: 200,
+    phases: [
+      {
+        name: 'Recollection',
+        healthAbove: 0.6,
+        telegraphMs: 640,
+        recoverMs: 760,
+        moveSpeed: 28,
+        patterns: ['volley', 'radial'],
+      },
+      {
+        name: 'Distortion',
+        healthAbove: 0.3,
+        telegraphMs: 500,
+        recoverMs: 560,
+        moveSpeed: 44,
+        patterns: ['volley', 'volley', 'radial'],
+      },
+      {
+        name: 'Shatter',
+        healthAbove: 0,
+        telegraphMs: 380,
+        recoverMs: 420,
+        moveSpeed: 64,
+        patterns: ['radial', 'volley', 'strike'],
+      },
+    ],
+  },
+};
+
 export function getBoss(id: string): BossDef {
   const b = BOSSES[id];
   if (!b) throw new Error(`Unknown boss: ${id}`);

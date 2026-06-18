@@ -78,8 +78,13 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 - [x] Real-asset pipeline: `BootScene.preload()` loads any manifest entry with a non-null `file`
       (`assets/loader.ts`); placeholder→real swap is a one-line manifest edit, unit-tested
 - [x] Dialogue system (multi-line, Interact-to-advance) + a rare wisp NPC in the Glass Reliquary
-- [ ] Flesh out the Glass Reliquary further (its own boss + altar — a god of memory)
+- [x] Glass Reliquary is now a full second region: its own ranged mini-boss (**The Reliquary Echo**) +
+      a god-of-memory altar with its own relight-vs-rest choice
 - [ ] Ship one actual real asset file (sprite/audio) end-to-end to close the loop visually
+- [ ] A second Refrain (`light_dash`) + a path gated on it (extend the BOTW loop with a new grant)
+- [ ] Glass-native enemy variety; the Drowned Hymn as the no-combat traversal/puzzle region (Pillar 4)
+- [ ] CI: GitHub Action running `test + build + lint` on push
+- [ ] Bundle size: `manualChunks` / slimmer Phaser build before any ship
 
 ## M5 — Vertical slice (Ashchoir)
 

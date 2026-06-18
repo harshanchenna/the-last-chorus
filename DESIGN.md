@@ -76,6 +76,10 @@ seam so the shape can grow safely.
   **Finale** (frantic, mostly radial chords + volleys). Each phase shortens the read window — the
   player must internalize the tells. Holds the eastern hall beyond the silence-gate, so reaching the
   Glass Reliquary means passing (or beating) it.
+- **The Reliquary Echo** (Glass Reliquary mini-boss) — a god of memory's last reflection, fighting at
+  range with shards of recollection. Contrasts the Choirmaster: ranged-heavy and keeps its distance.
+  Phases **Recollection** → **Distortion** → **Shatter** trade telegraph length for volley density,
+  closing to melee only as it breaks apart.
 
 ## Decisions
 
