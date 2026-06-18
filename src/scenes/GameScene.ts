@@ -22,16 +22,29 @@ import { DebugOverlay } from '../dev/DebugOverlay';
 import { DevConsole, type DevCommandHost } from '../dev/DevConsole';
 import { SaveSystem, defaultSave, type SaveData } from '../core/SaveSystem';
 import { Hud } from '../ui/Hud';
+import { DialoguePanel } from '../ui/DialoguePanel';
 import { ZoneMap } from '../world/ZoneMap';
 import { buildTileGrid } from '../world/mapgen';
 import { getMapSpec, TILE_SIZE } from '../data/maps';
-import { REST_POINT_KEY, LORE_KEY } from '../assets/placeholders';
+import { REST_POINT_KEY, LORE_KEY, GATE_KEY, EXIT_KEY } from '../assets/placeholders';
 import { GAME_TITLE, COMBAT } from '../core/config';
 
 interface Interactable {
   sprite: Phaser.GameObjects.Sprite;
   kind: 'rest' | 'lore';
   refId: string;
+}
+
+interface ZoneExitObj {
+  sprite: Phaser.GameObjects.Sprite;
+  toZone: string;
+}
+
+interface GateObj {
+  sprite: Phaser.GameObjects.Sprite;
+  body: Phaser.Physics.Arcade.StaticBody;
+  requiresRefrain: string;
+  open: boolean;
 }
 
 interface Projectile {
@@ -51,8 +64,12 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private devConsole!: DevConsole;
   private saves!: SaveSystem;
   private hud!: Hud;
+  private dialogue!: DialoguePanel;
   private map!: ZoneMap;
   private interactables: Interactable[] = [];
+  private exits: ZoneExitObj[] = [];
+  private gates: GateObj[] = [];
+  private transitioning = false;
   private enemies: Enemy[] = [];
   private projectiles: Projectile[] = [];
   private meleeCooldown = 0;
@@ -95,17 +112,33 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     cam.setDeadzone(40, 28);
     cam.setRoundPixels(true);
 
-    // Interactables: rest-points (save) + lore objects (Pillar 1).
+    // Interactables: rest-points (save) + lore objects — all data-driven (Pillar 1).
     this.interactables = [];
     for (const rp of zone.restPoints) {
       const s = this.add.sprite(rp.x, rp.y, REST_POINT_KEY);
       this.interactables.push({ sprite: s, kind: 'rest', refId: rp.id });
     }
-    // One lore object near the first rest point for M3 groundwork.
-    const firstRest = zone.restPoints[0];
-    if (firstRest) {
-      const loreSprite = this.add.sprite(firstRest.x + 40, firstRest.y, LORE_KEY);
-      this.interactables.push({ sprite: loreSprite, kind: 'lore', refId: 'ashchoir_pew' });
+    for (const lo of zone.loreObjects) {
+      const s = this.add.sprite(lo.x, lo.y, LORE_KEY);
+      this.interactables.push({ sprite: s, kind: 'lore', refId: lo.loreId });
+    }
+
+    // Zone exits (walk-on transitions) + ability-gated barriers (Pillar 4).
+    this.exits = zone.exits.map((ex) => ({
+      sprite: this.add.sprite(ex.x, ex.y, EXIT_KEY).setAlpha(0.8),
+      toZone: ex.toZone,
+    }));
+    this.transitioning = false;
+    this.gates = [];
+    for (const g of zone.gates) {
+      const sprite = this.add.sprite(g.x, g.y, GATE_KEY);
+      this.physics.add.existing(sprite, true);
+      const body = sprite.body as Phaser.Physics.Arcade.StaticBody;
+      const owned = this.save.refrains.includes(g.requiresRefrain);
+      const gate: GateObj = { sprite, body, requiresRefrain: g.requiresRefrain, open: owned };
+      this.applyGateState(gate);
+      this.physics.add.collider(this.player.sprite, sprite, undefined, () => !gate.open);
+      this.gates.push(gate);
     }
 
     this.enemies = [];
@@ -123,6 +156,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
     // UI + dev tooling.
     this.hud = new Hud(this);
+    this.dialogue = new DialoguePanel(this);
     this.overlay = new DebugOverlay(this);
     this.devConsole = new DevConsole(this);
 
@@ -163,6 +197,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       this.player.update(this.controls, delta);
       if (this.controls.interactPressed()) this.handleInteract();
       this.handleAttacks(delta);
+      this.checkExits();
     } else {
       this.player.sprite.setVelocity(0, 0);
     }
@@ -318,6 +353,11 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   }
 
   private handleInteract(): void {
+    // The same key dismisses an open lore panel.
+    if (this.dialogue.isOpen) {
+      this.dialogue.hide();
+      return;
+    }
     const near = this.nearestInteractable(24);
     if (!near) return;
     if (near.kind === 'rest') {
@@ -331,8 +371,37 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     } else {
       const lore = getLore(near.refId);
       if (!this.save.lore.includes(lore.id)) this.save.lore.push(lore.id);
-      this.flash(`${lore.title}: ${lore.text}`);
+      this.dialogue.show(lore.title, lore.text);
     }
+  }
+
+  /** Walk-on zone transition (autosaves first). Guarded so it fires once. */
+  private checkExits(): void {
+    if (this.transitioning) return;
+    const p = this.player.position;
+    for (const ex of this.exits) {
+      if (Phaser.Math.Distance.Between(p.x, p.y, ex.sprite.x, ex.sprite.y) <= 14) {
+        this.transitioning = true;
+        this.gotoZone(ex.toZone);
+        return;
+      }
+    }
+  }
+
+  /** Open gates the player now qualifies for (called after gaining a Refrain). */
+  private refreshGates(): void {
+    for (const gate of this.gates) {
+      if (!gate.open && this.save.refrains.includes(gate.requiresRefrain)) {
+        gate.open = true;
+        this.applyGateState(gate);
+      }
+    }
+  }
+
+  private applyGateState(gate: GateObj): void {
+    // Open gates become passable ghosts; closed gates are solid silence-voids.
+    gate.body.enable = !gate.open;
+    gate.sprite.setAlpha(gate.open ? 0.18 : 1);
   }
 
   private nearestInteractable(radius: number): Interactable | null {
@@ -380,6 +449,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   giveRefrain(id: string): void {
     const r = getRefrain(id);
     if (!this.save.refrains.includes(r.id)) this.save.refrains.push(r.id);
+    this.saves.save(this.save); // persist immediately so the unlock survives death
+    this.refreshGates(); // a gained Refrain can open previously-blocked paths (BOTW loop)
+    this.flash(`Refrain gained: ${r.name}`);
   }
 
   toggleGodmode(): boolean {

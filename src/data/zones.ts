@@ -12,6 +12,30 @@ export interface RestPoint {
   y: number;
 }
 
+/** A walk-on trigger that transitions to another zone (autosaves first). */
+export interface ZoneExit {
+  id: string;
+  x: number;
+  y: number;
+  toZone: string;
+}
+
+/** A silence-void barrier that blocks passage until a Refrain is owned (Pillar 4). */
+export interface Gate {
+  id: string;
+  x: number;
+  y: number;
+  /** Refrain id required to pass. */
+  requiresRefrain: string;
+}
+
+/** A discoverable lore object placed in the world (Pillar 1). */
+export interface LoreObject {
+  x: number;
+  y: number;
+  loreId: string;
+}
+
 export interface ZoneDef {
   id: string;
   name: string;
@@ -24,6 +48,9 @@ export interface ZoneDef {
   /** Where the player starts if no save exists. */
   defaultSpawn: { x: number; y: number };
   restPoints: RestPoint[];
+  exits: ZoneExit[];
+  gates: Gate[];
+  loreObjects: LoreObject[];
   /** AudioDirector zone id for the ambient stem set. */
   ambientId: string;
 }
@@ -37,6 +64,14 @@ export const ZONES: Record<string, ZoneDef> = {
     bgColor: 0x1a1210,
     defaultSpawn: { x: 240, y: 160 },
     restPoints: [{ id: 'ashchoir.first_pew', x: 200, y: 140 }],
+    exits: [{ id: 'ashchoir.east', x: 920, y: 272, toZone: 'glass_reliquary' }],
+    // Silence-void barring the chancel doorway — needs the first Refrain to cross.
+    gates: [{ id: 'ashchoir.silence_gate', x: 584, y: 248, requiresRefrain: 'first_refrain' }],
+    loreObjects: [
+      { x: 248, y: 140, loreId: 'ashchoir_pew' },
+      // The secret beyond the gate (Pillar 4 payoff).
+      { x: 820, y: 272, loreId: 'ashchoir_secret' },
+    ],
     ambientId: 'ashchoir',
   },
   glass_reliquary: {
@@ -47,6 +82,9 @@ export const ZONES: Record<string, ZoneDef> = {
     bgColor: 0x0e1620,
     defaultSpawn: { x: 240, y: 160 },
     restPoints: [{ id: 'glass.alcove', x: 220, y: 150 }],
+    exits: [{ id: 'glass.west', x: 40, y: 272, toZone: 'ashchoir' }],
+    gates: [],
+    loreObjects: [{ x: 300, y: 150, loreId: 'glass_reflection' }],
     ambientId: 'glass_reliquary',
   },
   drowned_hymn: {
@@ -57,6 +95,9 @@ export const ZONES: Record<string, ZoneDef> = {
     bgColor: 0x0a1414,
     defaultSpawn: { x: 240, y: 160 },
     restPoints: [{ id: 'drowned.bell', x: 220, y: 150 }],
+    exits: [],
+    gates: [],
+    loreObjects: [{ x: 300, y: 150, loreId: 'drowned_bell' }],
     ambientId: 'drowned_hymn',
   },
 };

@@ -17,6 +17,21 @@ export const LORE: Record<string, LoreDef> = {
     title: 'A Burnt Hymnal',
     text: 'The pages are ash, but the spine remembers the shape of singing. Someone knelt here a long time.',
   },
+  ashchoir_secret: {
+    id: 'ashchoir_secret',
+    title: 'Behind the Screen',
+    text: 'Past the silence, a single unburnt candle. It was lit recently. You are not the first to come back.',
+  },
+  glass_reflection: {
+    id: 'glass_reflection',
+    title: 'Your Own Reflection, Older',
+    text: 'The glass shows you a moment that has not happened yet — and you, in it, are tired of carrying the light.',
+  },
+  drowned_bell: {
+    id: 'drowned_bell',
+    title: 'A Bell Underwater',
+    text: 'It still rings on the tide, slow and muffled, keeping time for a god who has forgotten how to breathe.',
+  },
 };
 
 export function getLore(id: string): LoreDef {

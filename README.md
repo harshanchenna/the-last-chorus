@@ -30,9 +30,10 @@ Then open the URL Vite prints (default <http://localhost:5173>).
 | Interact               | `E` (save at a rest-point, read lore) | B                  |
 | Dev console            | `` ` `` (backtick) to toggle          | —                  |
 
-> Status now: **M2 (combat core) in progress** — light meter HUD, melee + ranged
-> light attacks, ashling enemies that telegraph before they strike, damage/death,
-> and rest-point respawn. Dash i-frames let you dodge through a telegraphed hit.
+> Status now: **M3 complete (zone & save)** — tile geometry with collision, walk-on zone transitions
+> (Ashchoir ⇄ Glass Reliquary), an ability-gated silence-void (open it with `give first_refrain` in the
+> dev console), a lore reveal panel, light-meter HUD, melee + ranged light attacks, telegraphing
+> enemies, death + rest-point respawn. Dash i-frames let you dodge through a telegraphed hit.
 
 ### Dev console commands
 

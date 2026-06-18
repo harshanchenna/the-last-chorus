@@ -35,16 +35,22 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 - [ ] Lock-on (optional) + tune attack reach/cooldowns for feel
 - [ ] More of the roster wired in (`reliquary_warden`, `tideborn`) for variety tests
 
-## M3 — Zone & save
+## ✅ M3 — Zone & save _(done)_
 
-- [ ] Load a hand-authored **Tiled** zone (JSON) via Phaser tilemap API (`/src/world`)
-- [ ] Zone transitions + autosave; multiple rooms
-- [ ] Ability-gated secret (placeholder gate)
-- [ ] Lore object UI (proper reveal panel, collected-lore list)
+- [x] Data-driven tile geometry + wall collision (`world/mapgen` + `world/ZoneMap`); Tiled JSON drops
+      into the same loader later
+- [x] Walk-on zone transitions with autosave (ashchoir ⇄ glass_reliquary)
+- [x] Ability-gated secret: a silence-void gate needing `first_refrain`, opening a path to a secret
+      lore object (proves the gating loop)
+- [x] Proper lore reveal panel (`ui/DialoguePanel`) + collected-lore persisted to save
+- [x] Content-integrity tests: exits→zones, gates→refrains, lore objects→entries, spawns on ground
 
-## M4 — Refrains & gating
+## ▶ M4 — Refrains & gating _(current)_
 
-- [ ] Refrain pickup + equip slot; first Refrain opens a previously-blocked path (prove BOTW loop)
+- [ ] In-world Refrain pickup entity (currently only via dev `give`) + pickup FX/jingle
+- [ ] Refrain equip slot + HUD icon (`ui.refrain_slot` / `ui.refrain_icons`)
+- [ ] A second gated path that uses a different Refrain grant (e.g. `light_dash` across a gap)
+- [ ] Collected-lore / Refrain menu (pause screen)
 
 ## M5 — Vertical slice (Ashchoir)
 

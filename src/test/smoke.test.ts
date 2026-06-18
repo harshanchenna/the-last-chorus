@@ -13,6 +13,8 @@ import { RENDER, GAME_TITLE, SAVE_VERSION, MOVEMENT } from '../core/config';
 import { ZONES, STARTING_ZONE, getZone } from '../data/zones';
 import { SPRITES, AUDIO, allPlaceholder } from '../assets/manifest';
 import { ENEMIES } from '../data/enemies';
+import { REFRAINS } from '../data/refrains';
+import { LORE } from '../data/lore';
 
 describe('render contract', () => {
   it('matches the asset spec internal resolution (480×270, 16px tiles)', () => {
@@ -64,5 +66,29 @@ describe('content integrity', () => {
 
   it('starts fully on placeholders', () => {
     expect(allPlaceholder()).toBe(true);
+  });
+
+  it('every zone exit points at a real zone', () => {
+    for (const z of Object.values(ZONES)) {
+      for (const ex of z.exits) {
+        expect(ZONES[ex.toZone], `${z.id} exit → ${ex.toZone}`).toBeDefined();
+      }
+    }
+  });
+
+  it('every gate requires a real Refrain', () => {
+    for (const z of Object.values(ZONES)) {
+      for (const g of z.gates) {
+        expect(REFRAINS[g.requiresRefrain], `${g.id} needs ${g.requiresRefrain}`).toBeDefined();
+      }
+    }
+  });
+
+  it('every placed lore object resolves to a lore entry', () => {
+    for (const z of Object.values(ZONES)) {
+      for (const lo of z.loreObjects) {
+        expect(LORE[lo.loreId], `${z.id} lore ${lo.loreId}`).toBeDefined();
+      }
+    }
   });
 });

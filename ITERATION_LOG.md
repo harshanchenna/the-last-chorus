@@ -114,3 +114,39 @@ dash (i-frames) through a wind-up.
 
 **Next** → M3: load a hand-authored **Tiled** zone (real geometry/collision) with transitions, more
 rest-points, a proper lore-reveal panel, and an ability-gated secret. Then M4 Refrains.
+
+---
+
+## 2026-06-18 — Cycle 3: M3 zone & save (geometry, transitions, gating, lore panel)
+
+**Built**
+
+- **M3a — geometry:** `world/mapgen.ts` (pure) expands a compact MapSpec (border + wall rectangles)
+  into a tile grid; `data/maps.ts` hand-authors each zone (ashchoir nave w/ pillars + chancel doorway,
+  glass shards, drowned sunken walls); `world/ZoneMap.ts` builds a Phaser tilemap + wall collision from
+  the grid (placeholder tileset). Player + enemies now collide with walls; bounds derive from the map.
+- **M3b — transitions:** data-driven `exits` per zone; walking onto one autosaves and loads the target
+  zone. Ashchoir ⇄ Glass Reliquary are now connected and traversable.
+- **M3c — gating + lore:** data-driven `gates` (silence-voids) that physically block passage until the
+  required Refrain is owned; gaining a Refrain (`give` in the dev console) opens the gate live and
+  persists, revealing a secret lore object beyond it — the BOTW come-back-stronger loop in miniature.
+  New `ui/DialoguePanel` shows lore as a quiet muted panel (Pillar 1) instead of a flash; collected
+  lore + refrains persist to the save.
+- Content-integrity tests: every exit→real zone, every gate→real Refrain, every lore object→real entry,
+  every spawn/rest-point on ground.
+
+**Why**
+
+M3 turns the "rooms" into an actual connected, gated world (Pillar 4) with persistence (seed §3).
+Keeping geometry/transitions/gates as data (not scene code) means new rooms are content edits; the
+Tiled JSON swap later reuses the same `ZoneMap` loader.
+
+**Verified**
+
+- `npm test` → 51 passing (mapgen 6, +3 content-integrity). Build + lint clean. Boots HTTP 200.
+
+**Try it:** `give first_refrain` in the dev console (`` ` ``), walk through the now-open chancel gate to
+the candle, then continue east to cross into the Glass Reliquary.
+
+**Next** → M4: an in-world Refrain pickup entity + equip slot/HUD icon, and a second gate using a
+different grant. Then M5 (full Ashchoir vertical slice: mini-boss, biome identity).
