@@ -6,8 +6,14 @@ This is the canonical guide; `CLAUDE.md` points here. Read this before making ch
 ## Project
 
 **The Last Chorus** — a persistent, hand-authored 2D top-down action-adventure (Phaser 3 + TypeScript +
-Vite) where "the world is a song." Not a roguelite: the world is authored, persistent, and saved. The
-full brief is the seed prompt (`thelastchorusseedprompt.md`); the asset contract is `ASSETS.md`.
+Vite) where "the world is a song." Not a roguelite: the world is authored, persistent, and saved.
+
+**New here? Read the founding documents in [`brief/`](./brief/) first** — they are the source of
+truth for intent (section references like "seed §8" throughout the docs point there):
+
+- [`brief/SEED_PROMPT.md`](./brief/SEED_PROMPT.md) — the full project brief & operating manual.
+- [`brief/ASSET_SPEC.md`](./brief/ASSET_SPEC.md) — the full asset production spec (the in-repo,
+  manifest-synced contract is [`ASSETS.md`](./ASSETS.md) at the root).
 
 This is a **self-iterating project**. The first job is always a clean, data-driven architecture and a
 tight feedback loop, not raw features. Always get to a _playable_ state, then deepen (vertical slices,

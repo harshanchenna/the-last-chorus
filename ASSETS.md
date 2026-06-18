@@ -81,5 +81,5 @@ god's held note), `melody` (fades in during calm), `tension` (fades in during co
 3. `tileset.ashchoir` + props + `zone.ashchoir.ambient` stems — M5 vertical slice.
 4. UI set, title/rest music, remaining SFX.
 
-> Full hand-off detail lives in the original asset spec sheet; this file is the live, in-repo contract
-> kept in sync with `manifest.ts`.
+> Full hand-off detail lives in the original asset spec sheet — [`brief/ASSET_SPEC.md`](./brief/ASSET_SPEC.md);
+> this file is the live, in-repo contract kept in sync with `manifest.ts`.

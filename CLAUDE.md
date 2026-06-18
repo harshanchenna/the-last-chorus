@@ -26,8 +26,9 @@ disagree.
 
 ## Project memory (read each cycle)
 
-`AGENTS.md` (rules) · `ITERATION_LOG.md` (history) · `TODO.md` (backlog) · `DESIGN.md` (world bible) ·
-`ARCHITECTURE.md` (why the code is shaped this way) · `ASSETS.md` (asset contract).
+`brief/` (founding seed prompt + asset spec) · `AGENTS.md` (rules) · `ITERATION_LOG.md` (history) ·
+`TODO.md` (backlog) · `DESIGN.md` (world bible) · `ARCHITECTURE.md` (why the code is shaped this way) ·
+`ASSETS.md` (asset contract).
 
 ## This session's branch
 
