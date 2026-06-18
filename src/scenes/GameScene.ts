@@ -13,7 +13,8 @@ import { getRefrain } from '../data/refrains';
 import { ENEMIES } from '../data/enemies';
 import { Player } from '../entities/Player';
 import { InputManager } from '../core/Input';
-import { AudioDirector, NullAudioBackend } from '../systems/AudioDirector';
+import { AudioDirector } from '../systems/AudioDirector';
+import { WebAudioToneBackend } from '../systems/WebAudioBackend';
 import { DebugOverlay } from '../dev/DebugOverlay';
 import { DevConsole, type DevCommandHost } from '../dev/DevConsole';
 import { SaveSystem, defaultSave, type SaveData } from '../core/SaveSystem';
@@ -84,7 +85,11 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
     // Systems.
     this.controls = new InputManager(this);
-    this.audio = new AudioDirector(new NullAudioBackend());
+    // Audible synthesized placeholder stems; browsers gate audio behind a gesture.
+    const audioBackend = new WebAudioToneBackend();
+    this.input.keyboard?.once('keydown', () => audioBackend.resume());
+    this.input.once('pointerdown', () => audioBackend.resume());
+    this.audio = new AudioDirector(audioBackend);
     this.audio.setZone(zone.ambientId);
 
     // Dev tooling.
