@@ -183,6 +183,14 @@ export async function gotoZone(page, zoneId) {
   await sleep(200);
 }
 
+/** Wait for the demo's EndScene to be reached. */
+export async function waitEnd(page) {
+  await page.waitForFunction(() => !!window.__lastChorusEnd, undefined, { timeout: 15000 });
+}
+
+/** Plain delay (e.g. to let a camera fade settle before a screenshot). */
+export const wait = (ms) => sleep(ms);
+
 /** Capture a screenshot into playtest/shots/<name>.png. */
 export async function shot(page, name) {
   await mkdir(SHOTS_DIR, { recursive: true });

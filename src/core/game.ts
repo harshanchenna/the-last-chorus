@@ -11,6 +11,7 @@ import { RENDER } from './config';
 import { BootScene } from '../scenes/BootScene';
 import { TitleScene } from '../scenes/TitleScene';
 import { GameScene } from '../scenes/GameScene';
+import { EndScene } from '../scenes/EndScene';
 
 export function createGameConfig(parent: string): Phaser.Types.Core.GameConfig {
   return {
@@ -35,7 +36,7 @@ export function createGameConfig(parent: string): Phaser.Types.Core.GameConfig {
         debug: false,
       },
     },
-    scene: [BootScene, TitleScene, GameScene],
+    scene: [BootScene, TitleScene, GameScene, EndScene],
   };
 }
 

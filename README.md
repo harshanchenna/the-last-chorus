@@ -46,12 +46,14 @@ choose **New Game** (or **Continue** if you have a save).
 >
 > **Toward an MVP demo:** a **title screen**, an atmospheric **prologue**, and an in-world **tutorial**
 > (one quiet hint per verb) now frame a first-time run as _intro → tutorial → demo_, with floating
-> interact prompts for readability.
+> interact prompts for readability. Answer both gods' altars and the demo reaches a bittersweet
+> **ending** that teases the bigger picture (the Drowned Hymn, the Chorus still failing).
 
 ### Dev console commands
 
 Toggle with `` ` `` then type `help`. Available: `teleport <x> <y>`, `spawn <enemyId>`,
-`give <refrainId>`, `godmode`, `reloadzone`, `zones`, `goto <zoneId>`.
+`boss <bossId>`, `defeat <spawnId>`, `give <refrainId>`, `godmode`, `reloadzone`, `zones`,
+`goto <zoneId>`.
 
 ## Saving / loading
 

@@ -532,3 +532,32 @@ a first-timer learns the verbs in-world and gets the mood up front, without a ma
 
 **Next** → the demo ending: resolve the arc and tease the bigger picture (the Drowned Hymn, the Chorus
 still failing), then audio SFX + transition polish.
+
+---
+
+## 2026-06-18 — Cycle 16: demo ending + bigger-picture teaser (the arc closes)
+
+**Built**
+
+- **`EndScene`** — reached once **every god's altar in the world has been answered** (`isDemoComplete`).
+  It reflects the choices back (relit / rested / mixed — bittersweet, never good/evil, Pillar 5), then
+  teases the larger world: _"Far to the south, the Drowned Hymn still keeps time… the Chorus is not done
+  failing. Nor are you done choosing."_ Then `— End of Demo —` and a return to the title (save kept).
+- Trigger: making the **final** altar choice arms `pendingEnding`; when the player dismisses that last
+  epitaph, the scene fades and hands off to `End`. Boot/scene list is now Boot → Title → Game → End.
+- **`defeat <spawnId>` dev command** (`defeatBoss`) — marks a placed boss defeated + wakes its altar,
+  so altars/endings are testable (and hand-playable) without grinding both bosses.
+
+**Why**
+
+A demo needs a real ending, not just "you can stop now." Closing on the choices the player made — and
+opening a window onto the rest of the world — is the _intro → tutorial → demo → teaser_ arc the MVP is
+framed around (Pillars 1 & 5).
+
+**Verified**
+
+- `npm run playtest` → 19/19; new steps drive both altars to the ending and back to the title. The
+  screenshot shows the full ending (reflection + teaser). `npm test` → 73 passing. Build + lint clean.
+
+**Next** → polish: an audio SFX layer (blade/dash/pickup/rest), zone-entry cards + fade transitions,
+then ship one real asset end-to-end and a playtest bug-bash.

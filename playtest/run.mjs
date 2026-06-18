@@ -23,6 +23,8 @@ import {
   tap,
   shot,
   clearShots,
+  waitEnd,
+  wait,
 } from './harness.mjs';
 
 const headless = !process.argv.includes('--head');
@@ -126,6 +128,38 @@ try {
   s = await state(page);
   await shot(page, '09-journal');
   check('journal freezes the game', s.paused === true);
+  await tap(page, 'P'); // close the journal
+
+  // ---- 9. Resolve both altars → the demo ending + teaser ----
+  console.log('\n[9] Demo ending — answer both altars');
+  await host(page, 'toggleGodmode'); // survive the arena while we drive the arc
+  // Glass Reliquary altar: defeat the Echo, relight.
+  await host(page, 'defeatBoss', 'glass.echo');
+  await host(page, 'teleport', 820, 200);
+  await tap(page, 'E'); // open the altar prompt
+  await tap(page, 'J'); // relight
+  await tap(page, 'E'); // close the epitaph
+  // Ashchoir altar: defeat the Choirmaster, let rest — the final choice.
+  await gotoZone(page, 'ashchoir');
+  await host(page, 'defeatBoss', 'ashchoir.choirmaster');
+  await host(page, 'teleport', 800, 180);
+  await tap(page, 'E'); // open the altar prompt
+  await tap(page, 'K'); // let rest (final altar → ending armed)
+  await tap(page, 'E'); // close the epitaph → ending fades in
+  await waitEnd(page);
+  await wait(1100); // let the ending fade-in settle before the screenshot
+  const ending = await page.evaluate(() => window.__lastChorusEnd);
+  await shot(page, '10-ending');
+  check('reaches the demo ending', !!ending);
+  check(
+    'ending reflects both choices',
+    ending.relit === 1 && ending.rested === 1,
+    JSON.stringify(ending),
+  );
+  // Return to the title from the ending.
+  await page.evaluate(() => window.__lastChorusEnd.returnToTitle());
+  await page.waitForFunction(() => !!window.__lastChorusTitle, undefined, { timeout: 8000 });
+  check('returns to the title from the ending', true);
 
   if (game.errors.length) {
     console.log('\n[page console/errors]');

@@ -131,6 +131,8 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private altarSprite: Phaser.GameObjects.Sprite | null = null;
   /** Set while the player is standing at an altar deciding relight vs rest. */
   private pendingAltar: Altar | null = null;
+  /** Set when the final altar choice is made — the ending fires when its epitaph closes. */
+  private pendingEnding = false;
   private save!: SaveData;
 
   constructor() {
@@ -869,6 +871,12 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       this.dialogue.show(this.dialogueTitle, this.dialogueLines[this.dialogueIdx]!);
     } else {
       this.dialogue.hide();
+      // The final altar epitaph just closed — roll the demo's ending.
+      if (this.pendingEnding) {
+        this.pendingEnding = false;
+        this.cameras.main.fade(900, 5, 6, 10, false);
+        this.time.delayedCall(950, () => this.scene.start('End'));
+      }
     }
   }
 
@@ -922,9 +930,20 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.saves.save(this.save);
     this.dialogue.hide();
     this.applyChoiceEffect(choice);
+    // If this was the last unanswered altar, the demo's arc is complete — the
+    // ending fires once the player dismisses this final epitaph (advanceDialogue).
+    if (this.isDemoComplete()) this.pendingEnding = true;
     this.startDialogue(choice === 'relight' ? 'Relit' : 'At Rest', [
       choice === 'relight' ? altar.relightText : altar.restText,
     ]);
+  }
+
+  /** True once every god's altar in the world has been answered (the demo's arc). */
+  private isDemoComplete(): boolean {
+    const altarIds = Object.values(ZONES)
+      .map((z) => z.altar?.id)
+      .filter((id): id is string => !!id);
+    return altarIds.length > 0 && altarIds.every((id) => !!this.save.choices[id]);
   }
 
   /** A small, bittersweet world change either way — never good/evil (Pillar 5). */
@@ -1062,6 +1081,21 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     if (!BOSSES[bossId]) throw new Error(`unknown boss ${bossId}`);
     const p = this.player.position;
     this.addBoss(bossId, p.x + 120, p.y);
+  }
+
+  /** Mark a placed boss defeated (records the kill + wakes its altar). Dev/testing. */
+  defeatBoss(spawnId: string): void {
+    if (!this.save.defeatedBosses.includes(spawnId)) {
+      this.save.defeatedBosses.push(spawnId);
+      this.saves.save(this.save);
+    }
+    // Remove a live instance, if present, and run the normal defeat hook.
+    const live = this.bosses.find((b) => this.bossSpawnId.get(b) === spawnId);
+    if (live) {
+      live.destroy();
+      this.bosses = this.bosses.filter((b) => b !== live);
+    }
+    this.onBossDefeated(spawnId, live?.def.name ?? 'A god');
   }
 
   giveRefrain(id: string): void {
