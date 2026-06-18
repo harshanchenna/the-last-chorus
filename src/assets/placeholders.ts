@@ -1,0 +1,45 @@
+/**
+ * Programmatic placeholder textures (seed §8).
+ *
+ * Until real art exists, every sprite is a distinct flat-color shape sized to its
+ * FINAL frame dimensions and color-coded by type. Because they match the manifest
+ * frame sizes, swapping in real art is a manifest edit, not a code change.
+ *
+ * This is the only asset file that touches Phaser; it runs once in BootScene.
+ */
+
+import Phaser from 'phaser';
+import { SPRITES } from './manifest';
+
+/** Build a single flat-color texture with a subtle border so facing is legible. */
+function makeBlock(scene: Phaser.Scene, key: string, w: number, h: number, color: number): void {
+  if (scene.textures.exists(key)) return;
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  g.fillStyle(color, 1);
+  g.fillRect(0, 0, w, h);
+  // Darker rim — reads as a silhouette edge at low res (asset spec §0).
+  g.lineStyle(1, 0x000000, 0.5);
+  g.strokeRect(0, 0, w, h);
+  // A facing pip near the top so direction is parseable even as a placeholder.
+  g.fillStyle(0xffffff, 0.9);
+  g.fillRect(Math.floor(w / 2) - 1, 2, 2, 2);
+  g.generateTexture(key, w, h);
+  g.destroy();
+}
+
+/** Generate placeholder textures for every sprite asset still lacking a file. */
+export function generatePlaceholders(scene: Phaser.Scene): void {
+  for (const def of Object.values(SPRITES)) {
+    if (def.file !== null) continue; // real art present — loader handles it.
+    makeBlock(scene, def.id, def.frame.w, def.frame.h, def.color);
+  }
+}
+
+/** Key used for a generic interactable / rest-point glyph placeholder. */
+export const REST_POINT_KEY = 'placeholder.rest_point';
+export const LORE_KEY = 'placeholder.lore';
+
+export function generateWorldPlaceholders(scene: Phaser.Scene): void {
+  makeBlock(scene, REST_POINT_KEY, 16, 16, 0x7fe3ff);
+  makeBlock(scene, LORE_KEY, 16, 16, 0xc9a24a);
+}
