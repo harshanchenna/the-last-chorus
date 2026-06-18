@@ -47,6 +47,7 @@ export class AudioDirector {
   private readonly fadeRate: number;
   private zoneId: string | null = null;
   private tension = 0; // 0 = calm, 1 = full combat
+  private silence = 0; // 0 = full sound, 1 = fully silenced (the unraveling eats sound)
   private readonly stems: Record<Stem, StemState> = {
     base: { current: 0, target: 0 },
     melody: { current: 0, target: 0 },
@@ -76,6 +77,15 @@ export class AudioDirector {
     this.recomputeTargets();
   }
 
+  /**
+   * 0 = full sound, 1 = total silence. Where a god's voice has fallen the
+   * unraveling *eats sound* (DESIGN: Ashchoir) — this scales every stem down so
+   * the world literally goes quiet as you walk into the decay (Pillar 2).
+   */
+  setSilence(s: number): void {
+    this.silence = Math.max(0, Math.min(1, s));
+  }
+
   private recomputeTargets(): void {
     // Base is the dying god's held note: always on once in a zone.
     this.stems.base.target = this.zoneId ? 1 : 0;
@@ -88,17 +98,23 @@ export class AudioDirector {
   update(dtMs: number): void {
     if (!this.zoneId) return;
     const step = (this.fadeRate * dtMs) / 1000;
+    const soundLevel = 1 - this.silence;
     (['base', 'melody', 'tension'] as Stem[]).forEach((s) => {
       const st = this.stems[s];
       if (st.current < st.target) st.current = Math.min(st.target, st.current + step);
       else if (st.current > st.target) st.current = Math.max(st.target, st.current - step);
-      this.backend.setGain(this.zoneId!, s, st.current);
+      this.backend.setGain(this.zoneId!, s, st.current * soundLevel);
     });
   }
 
-  /** Current mixed gain for a stem (for debug overlay + tests). */
+  /** Current mixed (pre-silence) gain for a stem — for the debug overlay + tests. */
   gainOf(stem: Stem): number {
     return this.stems[stem].current;
+  }
+
+  /** The silence the unraveling is currently imposing (0..1). */
+  get silenceLevel(): number {
+    return this.silence;
   }
 
   get currentZone(): string | null {

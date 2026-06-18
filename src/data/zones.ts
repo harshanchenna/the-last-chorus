@@ -53,6 +53,13 @@ export interface BossSpawn {
   bossId: string;
 }
 
+/** A placed enemy at zone load. */
+export interface EnemySpawn {
+  enemyId: string;
+  x: number;
+  y: number;
+}
+
 export interface ZoneDef {
   id: string;
   name: string;
@@ -74,6 +81,7 @@ export interface ZoneDef {
   loreObjects: LoreObject[];
   refrainPickups: RefrainPickup[];
   bosses: BossSpawn[];
+  enemySpawns: EnemySpawn[];
   /** AudioDirector zone id for the ambient stem set. */
   ambientId: string;
 }
@@ -94,6 +102,8 @@ export const ZONES: Record<string, ZoneDef> = {
     gates: [{ id: 'ashchoir.silence_gate', x: 584, y: 248, requiresRefrain: 'first_refrain' }],
     loreObjects: [
       { x: 248, y: 140, loreId: 'ashchoir_pew' },
+      // A trail of fragments leading east toward the arena.
+      { x: 520, y: 200, loreId: 'ashchoir_choir' },
       // The secret beyond the gate (Pillar 4 payoff).
       { x: 820, y: 272, loreId: 'ashchoir_secret' },
     ],
@@ -101,6 +111,14 @@ export const ZONES: Record<string, ZoneDef> = {
     refrainPickups: [{ id: 'ashchoir.first_refrain', x: 260, y: 384, refrainId: 'first_refrain' }],
     // The region climax: the Choirmaster holds the eastern hall beyond the gate.
     bosses: [{ id: 'ashchoir.choirmaster', x: 740, y: 272, bossId: 'miniboss_choirmaster' }],
+    // A swarm by the nave, then a heavier sentinel guarding the gated arena.
+    enemySpawns: [
+      { enemyId: 'ashling', x: 420, y: 200 },
+      { enemyId: 'ashling', x: 470, y: 320 },
+      { enemyId: 'ashling', x: 640, y: 220 },
+      { enemyId: 'ashling', x: 660, y: 330 },
+      { enemyId: 'reliquary_warden', x: 700, y: 272 },
+    ],
     ambientId: 'ashchoir',
   },
   glass_reliquary: {
@@ -118,6 +136,7 @@ export const ZONES: Record<string, ZoneDef> = {
     loreObjects: [{ x: 300, y: 150, loreId: 'glass_reflection' }],
     refrainPickups: [],
     bosses: [],
+    enemySpawns: [{ enemyId: 'reliquary_warden', x: 520, y: 300 }],
     ambientId: 'glass_reliquary',
   },
   drowned_hymn: {
@@ -135,6 +154,8 @@ export const ZONES: Record<string, ZoneDef> = {
     loreObjects: [{ x: 300, y: 150, loreId: 'drowned_bell' }],
     refrainPickups: [],
     bosses: [],
+    // A traversal/atmosphere zone — minimal fighting honours Pillar 4 (seed §3).
+    enemySpawns: [],
     ambientId: 'drowned_hymn',
   },
 };

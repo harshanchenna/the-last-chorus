@@ -105,6 +105,14 @@ describe('content integrity', () => {
     }
   });
 
+  it('every placed enemy references a real enemy def', () => {
+    for (const z of Object.values(ZONES)) {
+      for (const es of z.enemySpawns) {
+        expect(ENEMIES[es.enemyId], `${z.id} spawn ${es.enemyId}`).toBeDefined();
+      }
+    }
+  });
+
   it('every placed boss references a real boss def with ordered phases', () => {
     for (const z of Object.values(ZONES)) {
       for (const bs of z.bosses) {

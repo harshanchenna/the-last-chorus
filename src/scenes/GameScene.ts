@@ -193,7 +193,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.bosses = [];
     this.projectiles = [];
     this.enemyProjectiles = [];
-    this.spawnInitialEnemies(zone.defaultSpawn);
+    for (const es of zone.enemySpawns) this.addEnemy(es.enemyId, es.x, es.y);
     for (const bs of zone.bosses) this.addBoss(bs.bossId, bs.x, bs.y);
 
     // Systems.
@@ -213,12 +213,6 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.devConsole = new DevConsole(this);
 
     this.title();
-  }
-
-  /** Seed a couple of foes a bit away from spawn so combat is reachable, not ambushing. */
-  private spawnInitialEnemies(spawn: { x: number; y: number }): void {
-    this.addEnemy('ashling', spawn.x + 140, spawn.y + 40);
-    this.addEnemy('ashling', spawn.x + 200, spawn.y - 50);
   }
 
   private addEnemy(enemyId: string, x: number, y: number): void {
@@ -268,6 +262,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
     if (this.player.isDead) this.respawn();
 
+    this.audio.setSilence(this.computeSilence());
     this.audio.update(delta);
     this.audio.setTension(this.combatTension());
     const equippedId = this.save.refrains[0];
@@ -282,6 +277,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       `bosses ${this.bosses.length}`,
       `invuln ${this.player.isInvulnerable ? 'ON' : 'off'}`,
       `tension ${this.audio.gainOf('tension').toFixed(1)}`,
+      `silence ${this.audio.silenceLevel.toFixed(2)}`,
       `refrains ${this.save.refrains.length}`,
       `godmode ${this.godmode ? 'ON' : 'off'}`,
     ]);
@@ -501,6 +497,18 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private combatTension(): number {
     if (this.bosses.some((b) => !b.isDead)) return 1; // boss fight = full tension
     return this.enemies.some((e) => !e.isDead) ? 0.85 : 0;
+  }
+
+  /**
+   * "Ash eats sound" (DESIGN: Ashchoir) — the deeper east you go into the
+   * unraveling, the quieter the world gets, until even the god's held note is
+   * nearly swallowed. Only the ash region does this (Pillar 2 showcase).
+   */
+  private computeSilence(): number {
+    if (getZone(this.zoneId).unraveling !== 'ash') return 0;
+    const start = this.map.widthPx * 0.62; // the chancel screen onward
+    const t = (this.player.position.x - start) / (this.map.widthPx - start);
+    return Phaser.Math.Clamp(t, 0, 1) * 0.8;
   }
 
   private respawn(): void {

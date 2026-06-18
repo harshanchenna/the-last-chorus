@@ -1,5 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { AudioDirector, NullAudioBackend } from '../systems/AudioDirector';
+import {
+  AudioDirector,
+  NullAudioBackend,
+  type AudioBackend,
+  type Stem,
+} from '../systems/AudioDirector';
+
+/** Records the last gain set per stem so we can assert on the audible output. */
+class RecordingBackend implements AudioBackend {
+  gains: Partial<Record<Stem, number>> = {};
+  ensureStem(): void {}
+  setGain(_zone: string, stem: Stem, gain: number): void {
+    this.gains[stem] = gain;
+  }
+  releaseZone(): void {}
+}
 
 describe('AudioDirector reactive stem mixing', () => {
   it('fades base in once a zone is set', () => {
@@ -37,5 +52,19 @@ describe('AudioDirector reactive stem mixing', () => {
     d.update(1000);
     expect(d.currentZone).toBeNull();
     expect(d.gainOf('base')).toBe(0);
+  });
+
+  it('silence (the unraveling eating sound) scales the audible output down', () => {
+    const backend = new RecordingBackend();
+    const d = new AudioDirector(backend, { fadeRatePerSec: 100 });
+    d.setZone('ashchoir');
+    d.update(1000); // base reaches full
+    expect(backend.gains.base).toBeCloseTo(1, 5);
+
+    d.setSilence(0.75);
+    d.update(1000);
+    expect(d.silenceLevel).toBe(0.75);
+    expect(backend.gains.base).toBeCloseTo(0.25, 5); // 1 * (1 - 0.75)
+    expect(d.gainOf('base')).toBeCloseTo(1, 5); // raw mix unchanged
   });
 });

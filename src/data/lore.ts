@@ -17,6 +17,11 @@ export const LORE: Record<string, LoreDef> = {
     title: 'A Burnt Hymnal',
     text: 'The pages are ash, but the spine remembers the shape of singing. Someone knelt here a long time.',
   },
+  ashchoir_choir: {
+    id: 'ashchoir_choir',
+    title: 'The Choir Stalls',
+    text: 'Rows of seats face an empty dais. The wood is worn smooth where hands gripped it, bracing to sing one last time.',
+  },
   ashchoir_secret: {
     id: 'ashchoir_secret',
     title: 'Behind the Screen',

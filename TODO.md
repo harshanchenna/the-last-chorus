@@ -56,16 +56,27 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 - [ ] _Deferred:_ a second gate using a different grant (`light_dash` across a gap) — wants M5 geometry
 - [ ] _Deferred:_ pause/inventory menu listing collected lore + Refrains
 
-## ▶ M5 — Vertical slice: Ashchoir _(current)_
+## ✅ M5 — Vertical slice: Ashchoir _(done)_
 
 - [x] Biome identity: per-region tileset palette + an "unraveling" overlay (ash rises / glass sifts /
       tide drifts)
 - [x] A mini-boss (`miniboss_choirmaster`) with multi-phase telegraphs (Adagio→Crescendo→Finale) and
       three attack patterns (strike / radial chord / aimed volley); boss HP+phase bar; enemy projectiles
-- [ ] 2–3 distinct enemy types live in the zone (wire `tideborn`-style variety / an ashchoir-native foe)
-- [ ] Environmental lore trail through the region; a clear entrance + exit framing the boss arena
-- [ ] "Ash eats sound" mechanic: dampen audio/footsteps as you near the unraveling (Pillar 2 showcase)
-- [ ] Tune the whole loop so the region "sells the game"
+- [x] Two distinct enemy types live in the zone (ashling swarm + reliquary_warden heavy) via a
+      data-driven `enemySpawns` gauntlet; full roster is manifest-ready
+- [x] Environmental lore trail east toward the gated boss arena (pew → choir stalls → secret candle)
+- [x] "Ash eats sound": `AudioDirector.setSilence` scales every stem down as you push east into the
+      unraveling — the world literally goes quiet (Pillar 2 showcase), tested
+- [ ] _Polish deferred:_ an ashchoir-native heavy (reliquary_warden is a placeholder stand-in); footstep
+      SFX to dampen alongside the music
+
+## ▶ M6 — Second region & choices _(current)_
+
+- [ ] Flesh out the Glass Reliquary as a contrasting region (cold, memory, low-swarm) with its own foes
+- [ ] Dialogue system (reuse `DialoguePanel`) + a rare NPC/wisp
+- [ ] The relight-vs-rest choice at a god's altar — bittersweet, no good/evil meter (Pillar 5)
+- [ ] Pause/inventory menu (collected lore + Refrains)
+- [ ] Begin real-asset swap: wire one real sprite/audio file through the manifest to prove the pipeline
 
 ## M5 — Vertical slice (Ashchoir)
 

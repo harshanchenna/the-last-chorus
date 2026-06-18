@@ -219,3 +219,36 @@ miniboss_choirmaster` to summon it anywhere. Watch the phase name on the boss ba
 **Next** → finish M5: a second/third enemy type live in Ashchoir, an environmental lore trail framing
 the arena, and the "ash eats sound" audio-dampening showcase. Then M6 (second region, dialogue,
 relight-vs-rest choice, real-asset swap).
+
+---
+
+## 2026-06-18 — Cycle 6: M5c — completing the Ashchoir slice
+
+**Built**
+
+- **"Ash eats sound"** (Pillar 2 showcase): `AudioDirector.setSilence(0..1)` scales every stem's
+  audible output down (raw mix preserved). The scene ramps silence up as the player pushes east into
+  Ashchoir's unraveling, so the dying god's held note is nearly swallowed by the time you reach the
+  arena — the world literally goes quiet. Unit-tested with a recording backend.
+- **Enemy variety + gauntlet:** enemy placement is now data-driven (`enemySpawns` per zone). Ashchoir
+  has an ashling swarm by the nave and a heavier `reliquary_warden` sentinel guarding the gated arena
+  (two genuinely different combat reads: fast swarm vs slow heavy telegraph). The Drowned Hymn is left
+  enemy-free as the traversal/atmosphere zone (Pillar 4). Full roster is now manifest-ready (placeholders
+  for tideborn + warden).
+- **Lore trail** east toward the arena (burnt hymnal → choir stalls → the secret candle), so the region
+  tells its story environmentally (Pillar 1).
+- Content guard: every placed enemy references a real def.
+
+**Why**
+
+This closes M5 — the Ashchoir vertical slice now has biome identity, escalating combat (swarm → heavy →
+multi-phase boss), an environmental narrative, and the signature audio mechanic. It's the proof-of-concept
+that sells the whole game (seed M5).
+
+**Verified**
+
+- `npm test` → 60 passing. Build + lint clean. Boots HTTP 200.
+
+**Next** → M6: develop the Glass Reliquary as a contrasting region, a dialogue system + rare wisp, and
+the bittersweet relight-vs-rest choice (Pillar 5); begin the real-asset swap to prove the manifest
+pipeline end-to-end.

@@ -64,6 +64,22 @@ export const SPRITES: Record<string, SpriteAsset> = {
     color: 0xff7a3c,
     file: null,
   },
+  'enemy.reliquary_warden': {
+    kind: 'sprite',
+    id: 'enemy.reliquary_warden',
+    frame: { w: 32, h: 32 },
+    anims: { idle: 4, walk: 4, telegraph: 3, attack: 4, hurt: 2, death: 5 },
+    color: 0x9fd8e6,
+    file: null,
+  },
+  'enemy.tideborn': {
+    kind: 'sprite',
+    id: 'enemy.tideborn',
+    frame: { w: 32, h: 32 },
+    anims: { idle: 4, walk: 4, telegraph: 3, attack: 4, hurt: 2, death: 5 },
+    color: 0x4fb6a0,
+    file: null,
+  },
   'enemy.miniboss_choirmaster': {
     kind: 'sprite',
     id: 'enemy.miniboss_choirmaster',
