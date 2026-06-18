@@ -23,6 +23,10 @@ export interface SaveData {
   lore: string[];
   /** Collected in-world pickup ids (so they don't respawn). Added in v2. */
   pickups: string[];
+  /** Defeated boss ids (so they stay dead and altars unlock). Added in v3. */
+  defeatedBosses: string[];
+  /** Altar choices: altarId → 'relight' | 'rest'. Bittersweet, persistent. Added in v3. */
+  choices: Record<string, 'relight' | 'rest'>;
   /** Wall-clock ms when this was written. */
   savedAt: number;
 }
@@ -56,6 +60,8 @@ export function defaultSave(zoneId: string, spawn: { x: number; y: number }): Sa
     refrains: [],
     lore: [],
     pickups: [],
+    defeatedBosses: [],
+    choices: {},
     savedAt: 0,
   };
 }
@@ -71,8 +77,8 @@ export function migrate(raw: unknown): SaveData | null {
 
   if (data.version > SAVE_VERSION) return null; // from a newer build; refuse rather than corrupt.
 
-  // v1 → v2: `pickups` did not exist; default it. (Filling via `?? []` below
-  // also covers it, but this is the explicit migration seam for future steps.)
+  // v1 → v2 added `pickups`; v2 → v3 added `defeatedBosses` + `choices`. Each new
+  // field is defaulted via `?? …`, so older saves load forward cleanly.
   return {
     version: SAVE_VERSION,
     zoneId: data.zoneId ?? 'ashchoir',
@@ -81,6 +87,8 @@ export function migrate(raw: unknown): SaveData | null {
     refrains: data.refrains ?? [],
     lore: data.lore ?? [],
     pickups: data.pickups ?? [],
+    defeatedBosses: data.defeatedBosses ?? [],
+    choices: data.choices ?? {},
     savedAt: data.savedAt ?? 0,
   };
 }

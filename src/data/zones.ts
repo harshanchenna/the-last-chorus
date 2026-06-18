@@ -60,6 +60,23 @@ export interface EnemySpawn {
   y: number;
 }
 
+/**
+ * A god's altar: after the region's boss falls, the player chooses to **relight**
+ * the sleeping god or **let it rest** — a real moral weight, never good/evil
+ * (Pillar 5). The choice persists.
+ */
+export interface Altar {
+  id: string;
+  x: number;
+  y: number;
+  /** Boss spawn id that must be defeated before the altar wakes. */
+  bossSpawnId: string;
+  godName: string;
+  /** Flavor shown after each choice. */
+  relightText: string;
+  restText: string;
+}
+
 export interface ZoneDef {
   id: string;
   name: string;
@@ -82,6 +99,8 @@ export interface ZoneDef {
   refrainPickups: RefrainPickup[];
   bosses: BossSpawn[];
   enemySpawns: EnemySpawn[];
+  /** Optional god's altar (relight-vs-rest choice). */
+  altar?: Altar;
   /** AudioDirector zone id for the ambient stem set. */
   ambientId: string;
 }
@@ -119,6 +138,17 @@ export const ZONES: Record<string, ZoneDef> = {
       { enemyId: 'ashling', x: 660, y: 330 },
       { enemyId: 'reliquary_warden', x: 700, y: 272 },
     ],
+    altar: {
+      id: 'ashchoir.dais',
+      x: 800,
+      y: 180,
+      bossSpawnId: 'ashchoir.choirmaster',
+      godName: 'the god of fire & grief',
+      relightText:
+        'You give the last of your light to the dais. For one breath the choir sings again — then gutters, grateful and gone.',
+      restText:
+        'You close the hymnal and let the silence in. It is not defeat. It is the kindest thing left to give.',
+    },
     ambientId: 'ashchoir',
   },
   glass_reliquary: {

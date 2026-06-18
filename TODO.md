@@ -72,10 +72,11 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 
 ## ▶ M6 — Second region & choices _(current)_
 
+- [x] The relight-vs-rest choice at a god's altar — bittersweet, no good/evil meter (Pillar 5);
+      persists via save v3 (`defeatedBosses` + `choices`)
 - [ ] Flesh out the Glass Reliquary as a contrasting region (cold, memory, low-swarm) with its own foes
 - [ ] Dialogue system (reuse `DialoguePanel`) + a rare NPC/wisp
-- [ ] The relight-vs-rest choice at a god's altar — bittersweet, no good/evil meter (Pillar 5)
-- [ ] Pause/inventory menu (collected lore + Refrains)
+- [ ] Pause/inventory menu (collected lore + Refrains + choices made)
 - [ ] Begin real-asset swap: wire one real sprite/audio file through the manifest to prove the pipeline
 
 ## M5 — Vertical slice (Ashchoir)

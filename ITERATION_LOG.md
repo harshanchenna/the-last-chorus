@@ -252,3 +252,37 @@ that sells the whole game (seed M5).
 **Next** → M6: develop the Glass Reliquary as a contrasting region, a dialogue system + rare wisp, and
 the bittersweet relight-vs-rest choice (Pillar 5); begin the real-asset swap to prove the manifest
 pipeline end-to-end.
+
+---
+
+## 2026-06-18 — Cycle 7: M6a — the relight-vs-rest choice (Pillar 5)
+
+**Built**
+
+- The thematic heart of the game: after the Choirmaster falls, a **god's altar** wakes at the dais.
+  Standing on it and interacting offers a real moral weight — **[J] relight** the god or **[K] let it
+  rest** — never good/evil (Pillar 5). Either way the flavor is bittersweet; the choice persists and the
+  altar afterward shows the epitaph of what you chose.
+- **Save v3:** added `defeatedBosses` (bosses stay dead; the world is persistent) and `choices`
+  (altarId → 'relight' | 'rest'), with a tested v1→v3 forward migration.
+- Boss-defeat detection in the scene records the kill + wakes the matching altar (soft pulsing light to
+  draw the player in). A small camera effect differentiates the two endings (a warm flash vs a kind
+  fade to deeper quiet).
+- Content guard: every altar waits on a boss that actually exists in its zone.
+
+**Why**
+
+Pillar 5 — "Relight vs let rest should feel like a real moral weight, never a good/evil meter." This is
+the emotional core the whole fiction builds toward, so it ships as a complete, persistent, in-world
+choice rather than a menu.
+
+**Verified**
+
+- `npm test` → 62 passing (save v3 migration + altar content guard added). Build + lint clean. Boots
+  HTTP 200.
+
+**Try it:** beat the Choirmaster (or `boss miniboss_choirmaster`, then defeat it), step onto the
+altar that lights up, and press `E` — then choose with `J` / `K`.
+
+**Next** → continue M6: a dialogue system + a rare wisp NPC, a pause/inventory menu (collected lore +
+Refrains + your choices), and the first real-asset swap through the manifest.

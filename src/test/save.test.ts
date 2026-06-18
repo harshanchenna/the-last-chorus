@@ -53,7 +53,7 @@ describe('migrate', () => {
     expect(m!.refrains).toEqual([]);
   });
 
-  it('migrates a v1 save forward, adding pickups', () => {
+  it('migrates a v1 save forward, adding v2/v3 fields', () => {
     const v1 = {
       version: 1,
       zoneId: 'ashchoir',
@@ -66,7 +66,20 @@ describe('migrate', () => {
     const m = migrate(v1);
     expect(m).not.toBeNull();
     expect(m!.version).toBe(SAVE_VERSION);
-    expect(m!.pickups).toEqual([]); // new field defaulted
+    expect(m!.pickups).toEqual([]); // v2 field defaulted
+    expect(m!.defeatedBosses).toEqual([]); // v3 field defaulted
+    expect(m!.choices).toEqual({}); // v3 field defaulted
     expect(m!.refrains).toEqual(['first_refrain']); // preserved
+  });
+
+  it('preserves v3 choices + defeated bosses across save/load', () => {
+    const sys = new SaveSystem(new MemoryStore());
+    const data = defaultSave('ashchoir', { x: 0, y: 0 });
+    data.defeatedBosses.push('ashchoir.choirmaster');
+    data.choices['ashchoir.dais'] = 'rest';
+    sys.save(data);
+    const loaded = sys.load();
+    expect(loaded!.defeatedBosses).toContain('ashchoir.choirmaster');
+    expect(loaded!.choices['ashchoir.dais']).toBe('rest');
   });
 });

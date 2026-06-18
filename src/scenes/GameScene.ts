@@ -38,8 +38,9 @@ import {
   GATE_KEY,
   EXIT_KEY,
   REFRAIN_KEY,
+  ALTAR_KEY,
 } from '../assets/placeholders';
-import type { RefrainPickup } from '../data/zones';
+import type { RefrainPickup, Altar } from '../data/zones';
 import { GAME_TITLE, COMBAT } from '../core/config';
 
 interface Interactable {
@@ -94,11 +95,16 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private transitioning = false;
   private enemies: Enemy[] = [];
   private bosses: Boss[] = [];
+  private bossSpawnId = new Map<Boss, string>();
   private projectiles: Projectile[] = [];
   private enemyProjectiles: Projectile[] = [];
   private meleeCooldown = 0;
   private castCooldown = 0;
   private godmode = false;
+  private altar: Altar | null = null;
+  private altarSprite: Phaser.GameObjects.Sprite | null = null;
+  /** Set while the player is standing at an altar deciding relight vs rest. */
+  private pendingAltar: Altar | null = null;
   private save!: SaveData;
 
   constructor() {
@@ -191,10 +197,24 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
     this.enemies = [];
     this.bosses = [];
+    this.bossSpawnId.clear();
     this.projectiles = [];
     this.enemyProjectiles = [];
+    // A boss already beaten in a prior visit stays dead (persistent world).
     for (const es of zone.enemySpawns) this.addEnemy(es.enemyId, es.x, es.y);
-    for (const bs of zone.bosses) this.addBoss(bs.bossId, bs.x, bs.y);
+    for (const bs of zone.bosses) {
+      if (this.save.defeatedBosses.includes(bs.id)) continue;
+      this.addBoss(bs.bossId, bs.x, bs.y, bs.id);
+    }
+
+    // The god's altar (relight-vs-rest). Dim until the region's boss has fallen.
+    this.altar = zone.altar ?? null;
+    this.pendingAltar = null;
+    this.altarSprite = null;
+    if (this.altar) {
+      this.altarSprite = this.add.sprite(this.altar.x, this.altar.y, ALTAR_KEY).setDepth(20);
+      this.altarSprite.setAlpha(this.isAltarAwake() ? 1 : 0.3);
+    }
 
     // Systems.
     this.controls = new InputManager(this);
@@ -221,10 +241,17 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.enemies.push(enemy);
   }
 
-  private addBoss(bossId: string, x: number, y: number): void {
+  private addBoss(bossId: string, x: number, y: number, spawnId?: string): void {
     const boss = new Boss(this, getBoss(bossId), x, y);
     this.physics.add.collider(boss.sprite, this.map.layer);
     this.bosses.push(boss);
+    if (spawnId) this.bossSpawnId.set(boss, spawnId);
+  }
+
+  /** True once every boss this altar waits on has been defeated. */
+  private isAltarAwake(): boolean {
+    if (!this.altar) return false;
+    return this.save.defeatedBosses.includes(this.altar.bossSpawnId);
   }
 
   private title(): void {
@@ -245,7 +272,11 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     if (this.controls.devTogglePressed()) this.devConsole.toggle();
 
     const consoleOpen = this.devConsole.isOpen;
-    if (!consoleOpen) {
+    if (this.pendingAltar) {
+      // While deciding at the altar, the player stands still and chooses.
+      this.player.sprite.setVelocity(0, 0);
+      this.handleAltarChoice();
+    } else if (!consoleOpen) {
       this.player.update(this.controls, delta);
       if (this.controls.interactPressed()) this.handleInteract();
       this.handleAttacks(delta);
@@ -423,7 +454,34 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     }
     if (engaged) this.bossBar.show(engaged.def.name, engaged.healthFraction, engaged.phaseName);
     else this.bossBar.hide();
+
+    // Record newly-defeated bosses (persisted), and wake the altar if it's theirs.
+    for (const b of this.bosses) {
+      if (!b.isDead) continue;
+      const id = this.bossSpawnId.get(b);
+      if (id && !this.save.defeatedBosses.includes(id)) {
+        this.save.defeatedBosses.push(id);
+        this.saves.save(this.save);
+        this.onBossDefeated(id);
+      }
+    }
     this.bosses = this.bosses.filter((b) => !b.isDead);
+  }
+
+  private onBossDefeated(spawnId: string): void {
+    this.flash('The Choirmaster falls silent.');
+    if (this.altar && this.altar.bossSpawnId === spawnId && this.altarSprite) {
+      // The altar wakes — a soft light to draw the player to the choice.
+      this.altarSprite.setAlpha(1);
+      this.tweens.add({
+        targets: this.altarSprite,
+        alpha: 0.6,
+        yoyo: true,
+        repeat: -1,
+        duration: 900,
+        ease: 'Sine.inOut',
+      });
+    }
   }
 
   /** Turn a boss attack pattern into real damage/projectiles (multi-phase combat). */
@@ -537,6 +595,14 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       this.dialogue.hide();
       return;
     }
+    // The god's altar takes priority when you're standing on it.
+    if (this.altar && this.altarSprite) {
+      const p = this.player.position;
+      if (Phaser.Math.Distance.Between(p.x, p.y, this.altar.x, this.altar.y) <= 22) {
+        this.interactAltar();
+        return;
+      }
+    }
     const near = this.nearestInteractable(24);
     if (!near) return;
     if (near.kind === 'rest') {
@@ -551,6 +617,61 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       const lore = getLore(near.refId);
       if (!this.save.lore.includes(lore.id)) this.save.lore.push(lore.id);
       this.dialogue.show(lore.title, lore.text);
+    }
+  }
+
+  /** Approach the altar: show the prior choice, a locked message, or the prompt. */
+  private interactAltar(): void {
+    const altar = this.altar!;
+    const prior = this.save.choices[altar.id];
+    if (prior) {
+      this.dialogue.show(
+        prior === 'relight' ? 'Relit' : 'At Rest',
+        prior === 'relight' ? altar.relightText : altar.restText,
+      );
+      return;
+    }
+    if (!this.isAltarAwake()) {
+      this.flash('The altar is cold. Something still sings beyond the screen.');
+      return;
+    }
+    // Offer the choice. Resolved in handleAltarChoice() via J / K.
+    this.pendingAltar = altar;
+    this.dialogue.show(
+      `The altar of ${altar.godName}`,
+      'Relight the god, or let it rest?   [ J ] relight     [ K ] let rest',
+    );
+  }
+
+  /** While the altar prompt is open, J relights and K lets the god rest (Pillar 5). */
+  private handleAltarChoice(): void {
+    if (!this.pendingAltar) return;
+    let choice: 'relight' | 'rest' | null = null;
+    if (this.controls.meleePressed()) choice = 'relight';
+    else if (this.controls.castPressed()) choice = 'rest';
+    if (!choice) return;
+
+    const altar = this.pendingAltar;
+    this.pendingAltar = null;
+    this.save.choices[altar.id] = choice;
+    this.saves.save(this.save);
+    this.dialogue.hide();
+    this.applyChoiceEffect(choice);
+    this.dialogue.show(
+      choice === 'relight' ? 'Relit' : 'At Rest',
+      choice === 'relight' ? altar.relightText : altar.restText,
+    );
+  }
+
+  /** A small, bittersweet world change either way — never good/evil (Pillar 5). */
+  private applyChoiceEffect(choice: 'relight' | 'rest'): void {
+    if (choice === 'relight') {
+      // The god's light briefly returns — warmth, then it fades.
+      this.cameras.main.flash(600, 255, 242, 196);
+    } else {
+      // The song ends; the region settles into a deeper, kinder quiet.
+      this.cameras.main.fade(500, 5, 6, 10, false);
+      this.time.delayedCall(520, () => this.cameras.main.fadeIn(600, 5, 6, 10));
     }
   }
 

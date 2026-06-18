@@ -126,4 +126,12 @@ describe('content integrity', () => {
       }
     }
   });
+
+  it('every altar waits on a boss that actually exists in its zone', () => {
+    for (const z of Object.values(ZONES)) {
+      if (!z.altar) continue;
+      const hasBoss = z.bosses.some((b) => b.id === z.altar!.bossSpawnId);
+      expect(hasBoss, `${z.altar.id} → ${z.altar.bossSpawnId}`).toBe(true);
+    }
+  });
 });

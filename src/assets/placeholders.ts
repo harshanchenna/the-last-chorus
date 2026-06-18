@@ -41,6 +41,7 @@ export const LORE_KEY = 'placeholder.lore';
 export const GATE_KEY = 'placeholder.gate';
 export const EXIT_KEY = 'placeholder.exit';
 export const REFRAIN_KEY = 'placeholder.refrain';
+export const ALTAR_KEY = 'placeholder.altar';
 
 export function generateWorldPlaceholders(scene: Phaser.Scene): void {
   makeBlock(scene, REST_POINT_KEY, 16, 16, 0x7fe3ff);
@@ -48,6 +49,7 @@ export function generateWorldPlaceholders(scene: Phaser.Scene): void {
   makeBlock(scene, GATE_KEY, 16, 16, 0x6a4f8a); // silence-void barrier (ability-gated)
   makeBlock(scene, EXIT_KEY, 16, 16, 0x3c6f4a); // zone transition trigger
   makeBlock(scene, REFRAIN_KEY, 16, 16, 0xfff2c4); // a fragment of the song (light)
+  makeBlock(scene, ALTAR_KEY, 16, 16, 0xb89cf0); // a sleeping god's altar (relight/rest)
 }
 
 /** Per-zone tileset key: index 0 = ground, 1 = wall. Drop-in for a real tilesheet. */
