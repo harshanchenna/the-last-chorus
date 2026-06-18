@@ -37,4 +37,16 @@ export default tseslint.config(
       },
     },
   },
+  {
+    // Build-time Node scripts (asset generation, etc.).
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+      },
+    },
+  },
 );

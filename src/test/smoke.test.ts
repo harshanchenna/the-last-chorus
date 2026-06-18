@@ -11,7 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { RENDER, GAME_TITLE, SAVE_VERSION, MOVEMENT } from '../core/config';
 import { ZONES, STARTING_ZONE, getZone } from '../data/zones';
-import { SPRITES, AUDIO, allPlaceholder } from '../assets/manifest';
+import { SPRITES, AUDIO, realAssetCount } from '../assets/manifest';
 import { ENEMIES } from '../data/enemies';
 import { REFRAINS } from '../data/refrains';
 import { LORE } from '../data/lore';
@@ -66,8 +66,14 @@ describe('content integrity', () => {
     }
   });
 
-  it('starts fully on placeholders', () => {
-    expect(allPlaceholder()).toBe(true);
+  it('ships the real player sprite; everything else is still a placeholder', () => {
+    expect(SPRITES.player!.file).toBe('assets/player.png');
+    expect(realAssetCount()).toBe(1);
+    // Every other sprite + all audio remain programmatic placeholders.
+    for (const [id, s] of Object.entries(SPRITES)) {
+      if (id !== 'player') expect(s.file, `${id} should still be placeholder`).toBeNull();
+    }
+    expect(Object.values(AUDIO).every((a) => a.file === null)).toBe(true);
   });
 
   it('every zone exit points at a real zone', () => {

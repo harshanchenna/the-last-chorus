@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { spritesToLoad, audioToLoad } from '../assets/loader';
 import type { SpriteAsset, AudioAsset } from '../assets/manifest';
-import { allPlaceholder } from '../assets/manifest';
+import { SPRITES } from '../assets/manifest';
 
 describe('asset loader planning (the placeholder → real swap)', () => {
   it('ignores placeholder sprites (file: null) and loads only real files', () => {
@@ -63,9 +63,14 @@ describe('asset loader planning (the placeholder → real swap)', () => {
     expect(track!.files).toEqual({ one_shot: 'assets/music_title.ogg' });
   });
 
-  it('the shipped manifest is still all-placeholder (nothing to load yet)', () => {
-    expect(spritesToLoad()).toHaveLength(0);
-    expect(audioToLoad()).toHaveLength(0);
-    expect(allPlaceholder()).toBe(true);
+  it('ships the real player sprite end-to-end (the placeholder→real proof)', () => {
+    // The player is the first real asset shipped (public/assets/player.png).
+    expect(SPRITES.player!.file).toBe('assets/player.png');
+    const planned = spritesToLoad();
+    const player = planned.find((s) => s.key === 'player');
+    expect(player).toBeDefined();
+    expect(player!.file).toBe('assets/player.png');
+    expect(player!.frameWidth).toBe(32);
+    expect(player!.frameHeight).toBe(32);
   });
 });

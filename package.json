@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "smoke": "vitest run src/test/smoke.test.ts",
     "playtest": "node playtest/run.mjs",
+    "gen:assets": "node scripts/gen-player-sprite.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write ."
   },

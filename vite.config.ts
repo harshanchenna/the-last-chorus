@@ -11,5 +11,12 @@ export default defineConfig({
     target: 'es2022',
     outDir: 'dist',
     sourcemap: true,
+    rollupOptions: {
+      output: {
+        // Split the (large) Phaser engine into its own chunk so app code can be
+        // cached/loaded separately from the engine.
+        manualChunks: { phaser: ['phaser'] },
+      },
+    },
   },
 });
