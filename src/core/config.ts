@@ -33,6 +33,33 @@ export const MOVEMENT = {
   dashIFramesMs: 130,
 } as const;
 
+/** Player combat feel (asset spec §3.1 / seed §3). Tuned alongside movement. */
+export const COMBAT = {
+  /** Blade-of-light melee. */
+  melee: {
+    damage: 12,
+    /** How far ahead of the player the arc reaches (px). */
+    reach: 22,
+    /** Half-size of the arc hitbox (px). */
+    radius: 16,
+    /** How long the hitbox is active (ms). */
+    activeMs: 110,
+    /** Minimum time between melee swings (ms). */
+    cooldownMs: 300,
+  },
+  /** Sung-light ranged cast. */
+  cast: {
+    damage: 8,
+    /** Projectile speed (px/s). */
+    speed: 220,
+    /** Projectile lifetime (ms). */
+    lifeMs: 900,
+    cooldownMs: 420,
+  },
+  /** Invulnerability after taking a hit (ms) so you aren't stun-locked. */
+  playerHurtIFramesMs: 600,
+} as const;
+
 /**
  * Save format version. Designed to be versioned from day one (seed §3).
  * Bump this whenever the SaveData shape changes and add a migration.

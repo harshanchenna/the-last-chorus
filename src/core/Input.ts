@@ -19,6 +19,8 @@ export class InputManager {
   private dashWasDown = false;
   private interactWasDown = false;
   private devWasDown = false;
+  private meleeWasDown = false;
+  private castWasDown = false;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -35,6 +37,8 @@ export class InputManager {
       rightArrow: kb.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT),
       dash: kb.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE),
       interact: kb.addKey('E'),
+      melee: kb.addKey('J'),
+      cast: kb.addKey('K'),
       dev: kb.addKey(Phaser.Input.Keyboard.KeyCodes.BACKTICK),
     };
   }
@@ -72,6 +76,22 @@ export class InputManager {
     const isDown = (this.keys.interact?.isDown ?? false) || (this.pad?.B ?? false);
     const edge = isDown && !this.interactWasDown;
     this.interactWasDown = isDown;
+    return edge;
+  }
+
+  /** True only on the frame the melee (blade-of-light) was pressed (J or gamepad X). */
+  meleePressed(): boolean {
+    const isDown = (this.keys.melee?.isDown ?? false) || (this.pad?.X ?? false);
+    const edge = isDown && !this.meleeWasDown;
+    this.meleeWasDown = isDown;
+    return edge;
+  }
+
+  /** True only on the frame the cast (sung-light) was pressed (K or gamepad Y). */
+  castPressed(): boolean {
+    const isDown = (this.keys.cast?.isDown ?? false) || (this.pad?.Y ?? false);
+    const edge = isDown && !this.castWasDown;
+    this.castWasDown = isDown;
     return edge;
   }
 

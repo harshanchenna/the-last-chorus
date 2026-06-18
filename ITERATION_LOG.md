@@ -78,3 +78,39 @@ just state. A single `AGENTS.md` avoids two agent docs drifting apart.
 
 **Next** → finish M1: camera deadzone/lookahead tuning + a placeholder combat dummy to hit, then begin
 M2 (combat core: melee + ranged light attack, enemy telegraph AI, damage/death/respawn).
+
+---
+
+## 2026-06-18 — Cycle 2: M1 close-out + M2 combat core
+
+**Built**
+
+- **M1c:** camera deadzone (40×28) + round-pixels for crisp, non-jittery top-down framing. M1 closed.
+- **M2 — combat core** (the milestone where it becomes a game):
+  - Pure `systems/health.ts` (clamp/damage/heal, lethality) and `systems/enemyAI.ts` (idle → chase →
+    **telegraph** → attack → recover state machine; the strike opens for exactly one frame when the
+    wind-up completes). Both fully unit-tested.
+  - `entities/Enemy.ts` bridges those to a data-driven Phaser sprite: chase/lunge motion, a bright
+    "swell + flash" telegraph tell, a hurt flash, a damage-only HP pip, and death motes (fx.death_motes).
+  - Player gained light/health, hit i-frames (with a blink), `takeDamage`/`restoreLight`, and an
+    `aimVector` from facing. Melee = an arc hitbox ahead of the player (blade-of-light); cast = a
+    travelling sung-light mote that damages the first enemy it meets. Camera shake/flash juice.
+  - `ui/Hud.ts` light meter — reads as light filling/draining (never a red bar; asset spec §5).
+  - Death returns to the last rest-point (reposition + refill, or reload the saved zone); rest-points
+    now also restore light. Live enemies drive `AudioDirector.setTension`, so the tension stem swells
+    in combat and fades after a clear.
+  - Inputs: `J`/gamepad-X melee, `K`/gamepad-Y cast, folded into `InputManager`.
+
+**Why**
+
+Combat is Pillar 3. Keeping health + AI as pure modules means the telegraph timing and damage math are
+test-backed and tunable without the engine. Telegraph-as-a-state makes "reward the read" real: you can
+dash (i-frames) through a wind-up.
+
+**Verified**
+
+- `npm test` → 42 passing (added health 4, enemyAI 6; movement now 13).
+- `npm run build` → strict tsc + Vite bundle clean. `npm run lint` → clean.
+
+**Next** → M3: load a hand-authored **Tiled** zone (real geometry/collision) with transitions, more
+rest-points, a proper lore-reveal panel, and an ability-gated secret. Then M4 Refrains.

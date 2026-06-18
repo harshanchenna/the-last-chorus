@@ -7,7 +7,10 @@
  */
 
 import Phaser from 'phaser';
-import { createMoverState, stepMover, type MoverState } from '../systems/movement';
+import { createMoverState, stepMover, facingToVector, type MoverState } from '../systems/movement';
+import { makeHealth, applyDamage, heal, fraction, type Health } from '../systems/health';
+import { COMBAT } from '../core/config';
+import type { Vec2, Facing } from '../core/types';
 import type { InputManager } from '../core/Input';
 
 export class Player {
@@ -15,13 +18,18 @@ export class Player {
   private readonly scene: Phaser.Scene;
   private readonly textureKey: string;
   private readonly mover: MoverState;
-  private invulnerable = false;
+  private readonly light: Health;
+  private dashInvuln = false;
+  private hurtIframes = 0;
   private trailTimer = 0;
+  /** When true (godmode), the player never takes damage. */
+  godmode = false;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, textureKey = 'player') {
+  constructor(scene: Phaser.Scene, x: number, y: number, maxLight: number, textureKey = 'player') {
     this.scene = scene;
     this.textureKey = textureKey;
     this.mover = createMoverState();
+    this.light = makeHealth(maxLight);
     this.sprite = scene.physics.add.sprite(x, y, textureKey);
     this.sprite.setCollideWorldBounds(true);
     // Hitbox a touch smaller than the 32px frame — the character occupies ~20px.
@@ -34,8 +42,16 @@ export class Player {
   update(input: InputManager, dtMs: number): void {
     const result = stepMover(this.mover, input.sample(), dtMs);
     this.sprite.setVelocity(result.velocity.x, result.velocity.y);
-    this.invulnerable = result.invulnerable;
+    this.dashInvuln = result.invulnerable;
     this.sprite.setFlipX(result.facing.flipX);
+
+    if (this.hurtIframes > 0) {
+      this.hurtIframes -= dtMs;
+      // Blink while invulnerable from a hit.
+      this.sprite.setVisible(Math.floor(this.hurtIframes / 80) % 2 === 0);
+    } else {
+      this.sprite.setVisible(true);
+    }
 
     // Light-trail tell during a dash: brighten the body + leave fading afterimages.
     const dashing = this.mover.phase === 'dashing';
@@ -68,7 +84,43 @@ export class Player {
   }
 
   get isInvulnerable(): boolean {
-    return this.invulnerable;
+    return this.dashInvuln || this.hurtIframes > 0 || this.godmode;
+  }
+
+  /** Current facing as a unit vector — the direction attacks fire (Pillar 3). */
+  get aimVector(): Vec2 {
+    return facingToVector(this.mover.facing);
+  }
+
+  get facing(): Facing {
+    return this.mover.facing;
+  }
+
+  /** Light remaining as a 0..1 fraction — drives the HUD light meter. */
+  get lightFraction(): number {
+    return fraction(this.light);
+  }
+
+  get lightValue(): number {
+    return this.light.current;
+  }
+
+  /** Take damage unless currently invulnerable. Returns true if this was lethal. */
+  takeDamage(amount: number): boolean {
+    if (this.isInvulnerable) return false;
+    const { dead } = applyDamage(this.light, amount);
+    this.hurtIframes = COMBAT.playerHurtIFramesMs;
+    this.scene.cameras.main.shake(120, 0.006);
+    return dead;
+  }
+
+  /** Restore light to full (rest-point / respawn). */
+  restoreLight(): void {
+    heal(this.light, this.light.max);
+  }
+
+  get isDead(): boolean {
+    return this.light.current <= 0;
   }
 
   get position(): { x: number; y: number } {

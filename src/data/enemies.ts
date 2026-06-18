@@ -15,6 +15,14 @@ export interface EnemyDef {
   damage: number;
   /** Wind-up before an attack lands, in ms — the player's read window. */
   telegraphMs: number;
+  /** Start chasing within this distance (px). */
+  aggroRange: number;
+  /** Begin the telegraph once within this distance (px). */
+  attackRange: number;
+  /** How long the strike stays active (ms). */
+  attackMs: number;
+  /** Cooldown after a strike (ms). */
+  recoverMs: number;
   /** Placeholder tint for the programmatic sprite. */
   color: number;
   vibe: string;
@@ -29,6 +37,10 @@ export const ENEMIES: Record<string, EnemyDef> = {
     moveSpeed: 70,
     damage: 8,
     telegraphMs: 280,
+    aggroRange: 120,
+    attackRange: 22,
+    attackMs: 140,
+    recoverMs: 380,
     color: 0xff7a3c,
     vibe: 'Small ember-wisp; fast, swarms.',
   },
@@ -40,6 +52,10 @@ export const ENEMIES: Record<string, EnemyDef> = {
     moveSpeed: 30,
     damage: 18,
     telegraphMs: 650,
+    aggroRange: 140,
+    attackRange: 28,
+    attackMs: 220,
+    recoverMs: 700,
     color: 0x9fd8e6,
     vibe: 'Slow glass sentinel; heavy telegraph.',
   },
@@ -51,6 +67,10 @@ export const ENEMIES: Record<string, EnemyDef> = {
     moveSpeed: 55,
     damage: 14,
     telegraphMs: 420,
+    aggroRange: 160,
+    attackRange: 26,
+    attackMs: 180,
+    recoverMs: 520,
     color: 0x4fb6a0,
     vibe: 'Drowned figure; lunges.',
   },

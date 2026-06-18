@@ -14,23 +14,26 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 - [x] AudioDirector reactive stem system (NullBackend) wired to zone/tension
 - [x] Green smoke test + unit specs (movement/audio/save); build + lint clean
 
-## ▶ M1 — Game feel _(current — over-invest here)_
+## ✅ M1 — Game feel _(done)_
 
-- [ ] Tune `MOVEMENT` constants until walking + dashing feel _good_ (the foundation is sacred)
-- [ ] Dash visuals: light-trail FX frame + screen-feel (subtle squash/afterimage)
-- [ ] Acceleration/friction model? (currently instant velocity) — prototype + A/B, keep what feels best
-- [ ] Gamepad support behind the existing `MoveInput` snapshot
-- [ ] Placeholder combat dummy to hit (no AI) for feel reference
-- [ ] WebAudio tone backend for `AudioDirector` so placeholder stems are audible (respect autoplay gesture)
-- [ ] Camera: deadzone/lookahead tuning for top-down readability
+- [x] Acceleration/friction momentum model (replaced instant velocity); tuned `MOVEMENT`
+- [x] Dash light-trail (fading afterimage ghosts) + i-frames
+- [x] Gamepad support behind the existing `MoveInput` snapshot (stick/d-pad + buttons)
+- [x] WebAudio tone backend so placeholder stems are audible (gesture-resumed)
+- [x] Camera deadzone + round-pixels for crisp top-down framing
+- [ ] _Deferred:_ further hand-tuning of feel constants once real sprites land (needs visual feedback)
 
-## M2 — Combat core
+## ▶ M2 — Combat core _(current)_
 
-- [ ] Light melee (blade-of-light arc) + ranged sung-light attack
-- [ ] Health/light-capacity + damage + death → rest-point respawn
-- [ ] One enemy (`ashling`) with idle/walk/**telegraph**/attack/hurt/death AI
-- [ ] Real combat state drives `AudioDirector.setTension` (replace enemy-count placeholder)
-- [ ] HUD: light meter (reads as light, not a red bar)
+- [x] Light melee (blade-of-light arc) + ranged sung-light projectile
+- [x] Health/light-capacity + damage + death → rest-point respawn (+ camera shake/flash juice)
+- [x] `ashling` enemy with idle/chase/**telegraph**/attack/recover AI (pure, tested)
+- [x] Real combat state drives `AudioDirector.setTension` (live enemies raise tension)
+- [x] HUD: light meter (reads as light, not a red bar)
+- [ ] Enemy `walk`/`hurt`/`death` anim hooks once sprite sheets exist (placeholder flashes for now)
+- [ ] Knockback on hit (player + enemy) for extra impact
+- [ ] Lock-on (optional) + tune attack reach/cooldowns for feel
+- [ ] More of the roster wired in (`reliquary_warden`, `tideborn`) for variety tests
 
 ## M3 — Zone & save
 
