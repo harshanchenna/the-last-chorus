@@ -18,15 +18,19 @@ export const RENDER = {
 /** Player movement feel. Tuned in M1 — this is the sacred foundation (seed §3 / M1). */
 export const MOVEMENT = {
   /** Walk speed in pixels/second. */
-  walkSpeed: 90,
+  walkSpeed: 96,
+  /** Acceleration toward target velocity, px/s². High = snappy (Dead Cells energy). */
+  accel: 1400,
+  /** Deceleration when input is released, px/s². Higher than accel for crisp stops. */
+  friction: 2000,
   /** Dash speed in pixels/second (M1 tuning target). */
-  dashSpeed: 260,
+  dashSpeed: 280,
   /** How long a dash lasts, in milliseconds. */
-  dashDurationMs: 160,
+  dashDurationMs: 150,
   /** Cooldown before another dash can start, in milliseconds. */
-  dashCooldownMs: 320,
+  dashCooldownMs: 300,
   /** Invulnerability window during a dash, in milliseconds (i-frames). */
-  dashIFramesMs: 140,
+  dashIFramesMs: 130,
 } as const;
 
 /**

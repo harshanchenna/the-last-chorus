@@ -54,6 +54,8 @@ export interface MoverState {
   cooldownTimer: number;
   /** Unit vector the current dash is travelling along. */
   dashDir: Vec2;
+  /** Current velocity in px/s — carries momentum across frames (accel/friction). */
+  velocity: Vec2;
   facing: Facing;
 }
 
@@ -63,8 +65,15 @@ export function createMoverState(): MoverState {
     dashTimer: 0,
     cooldownTimer: 0,
     dashDir: { x: 0, y: 0 },
+    velocity: { x: 0, y: 0 },
     facing: { dir: 'down', flipX: false },
   };
+}
+
+/** Move `current` toward `target` by at most `maxDelta`. */
+function approach(current: number, target: number, maxDelta: number): number {
+  if (current < target) return Math.min(current + maxDelta, target);
+  return Math.max(current - maxDelta, target);
 }
 
 export interface MoveResult {
@@ -108,20 +117,30 @@ export function stepMover(state: MoverState, input: MoveInput, dtMs: number): Mo
     state.dashDir = dir;
   }
 
+  // Dash overrides motion with a snappy fixed velocity (no easing — it should pop).
   if (state.phase === 'dashing') {
     const elapsed = MOVEMENT.dashDurationMs - state.dashTimer;
+    state.velocity.x = state.dashDir.x * MOVEMENT.dashSpeed;
+    state.velocity.y = state.dashDir.y * MOVEMENT.dashSpeed;
     return {
-      velocity: {
-        x: state.dashDir.x * MOVEMENT.dashSpeed,
-        y: state.dashDir.y * MOVEMENT.dashSpeed,
-      },
+      velocity: { ...state.velocity },
       invulnerable: elapsed <= MOVEMENT.dashIFramesMs,
       facing: state.facing,
     };
   }
 
+  // Walk: accelerate toward target velocity, decelerate (friction) when released.
+  // Momentum carries out of a dash into the cooldown, then bleeds off.
+  const dtSec = dtMs / 1000;
+  const targetX = moveVec.x * MOVEMENT.walkSpeed;
+  const targetY = moveVec.y * MOVEMENT.walkSpeed;
+  const moving = moveVec.x !== 0 || moveVec.y !== 0;
+  const rate = (moving ? MOVEMENT.accel : MOVEMENT.friction) * dtSec;
+  state.velocity.x = approach(state.velocity.x, targetX, rate);
+  state.velocity.y = approach(state.velocity.y, targetY, rate);
+
   return {
-    velocity: { x: moveVec.x * MOVEMENT.walkSpeed, y: moveVec.y * MOVEMENT.walkSpeed },
+    velocity: { ...state.velocity },
     invulnerable: false,
     facing: state.facing,
   };

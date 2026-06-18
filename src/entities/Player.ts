@@ -12,10 +12,15 @@ import type { InputManager } from '../core/Input';
 
 export class Player {
   readonly sprite: Phaser.Physics.Arcade.Sprite;
+  private readonly scene: Phaser.Scene;
+  private readonly textureKey: string;
   private readonly mover: MoverState;
   private invulnerable = false;
+  private trailTimer = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number, textureKey = 'player') {
+    this.scene = scene;
+    this.textureKey = textureKey;
     this.mover = createMoverState();
     this.sprite = scene.physics.add.sprite(x, y, textureKey);
     this.sprite.setCollideWorldBounds(true);
@@ -32,9 +37,34 @@ export class Player {
     this.invulnerable = result.invulnerable;
     this.sprite.setFlipX(result.facing.flipX);
 
-    // Light-trail tell during a dash: brighten + slight squash (placeholder feel).
+    // Light-trail tell during a dash: brighten the body + leave fading afterimages.
     const dashing = this.mover.phase === 'dashing';
-    this.sprite.setAlpha(dashing ? 0.7 : 1);
+    this.sprite.setAlpha(dashing ? 0.85 : 1);
+    if (dashing) {
+      this.trailTimer -= dtMs;
+      if (this.trailTimer <= 0) {
+        this.trailTimer = 28; // ms between afterimages
+        this.emitAfterimage();
+      }
+    } else {
+      this.trailTimer = 0;
+    }
+  }
+
+  /** A faded, decaying copy of the sprite — the dash light-trail (asset spec fx.dash_trail). */
+  private emitAfterimage(): void {
+    const ghost = this.scene.add
+      .image(this.sprite.x, this.sprite.y, this.textureKey)
+      .setFlipX(this.sprite.flipX)
+      .setAlpha(0.5)
+      .setTint(0xbfe6ff)
+      .setDepth(this.sprite.depth - 1);
+    this.scene.tweens.add({
+      targets: ghost,
+      alpha: 0,
+      duration: 180,
+      onComplete: () => ghost.destroy(),
+    });
   }
 
   get isInvulnerable(): boolean {
