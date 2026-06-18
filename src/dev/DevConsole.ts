@@ -9,6 +9,7 @@
 export interface DevCommandHost {
   teleport(x: number, y: number): void;
   spawn(enemyId: string): void;
+  spawnBoss(bossId: string): void;
   giveRefrain(id: string): void;
   toggleGodmode(): boolean;
   reloadZone(): void;
@@ -87,8 +88,12 @@ export class DevConsole {
       switch (cmd) {
         case 'help':
           this.print(
-            'commands: teleport <x> <y> | spawn <enemyId> | give <refrainId> | godmode | reloadzone | zones | goto <zoneId>',
+            'commands: teleport <x> <y> | spawn <enemyId> | boss <bossId> | give <refrainId> | godmode | reloadzone | zones | goto <zoneId>',
           );
+          break;
+        case 'boss':
+          this.host.spawnBoss(args[0]!);
+          this.print(`spawned boss ${args[0]}`);
           break;
         case 'teleport':
           this.host.teleport(Number(args[0]), Number(args[1]));

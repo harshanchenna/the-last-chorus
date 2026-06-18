@@ -15,6 +15,7 @@ import { SPRITES, AUDIO, allPlaceholder } from '../assets/manifest';
 import { ENEMIES } from '../data/enemies';
 import { REFRAINS } from '../data/refrains';
 import { LORE } from '../data/lore';
+import { BOSSES } from '../data/bosses';
 
 describe('render contract', () => {
   it('matches the asset spec internal resolution (480×270, 16px tiles)', () => {
@@ -100,6 +101,20 @@ describe('content integrity', () => {
         // or the player could never reach it to open the gate (soft-lock guard).
         const gate = z.gates.find((g) => g.requiresRefrain === pk.refrainId);
         if (gate) expect(pk.x, `${pk.id} before ${gate.id}`).toBeLessThan(gate.x);
+      }
+    }
+  });
+
+  it('every placed boss references a real boss def with ordered phases', () => {
+    for (const z of Object.values(ZONES)) {
+      for (const bs of z.bosses) {
+        const def = BOSSES[bs.bossId];
+        expect(def, `${bs.id} → ${bs.bossId}`).toBeDefined();
+        // Phases must descend by healthAbove and end at 0, or phaseFor breaks.
+        const thresholds = def!.ai.phases.map((p) => p.healthAbove);
+        const sorted = [...thresholds].sort((a, b) => b - a);
+        expect(thresholds).toEqual(sorted);
+        expect(thresholds[thresholds.length - 1]).toBe(0);
       }
     }
   });

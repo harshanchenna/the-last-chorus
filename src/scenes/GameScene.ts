@@ -1,11 +1,12 @@
 /**
- * GameScene — the playable zone (M2: combat — melee + cast, enemies with
- * telegraph AI, damage/death, rest-point respawn — on top of M0/M1 movement,
- * dash, save, lore, dev tools).
+ * GameScene — the playable zone. Wires the whole game together: tile geometry,
+ * movement/dash, combat (melee + cast, telegraphing enemies, a multi-phase
+ * boss), zone transitions, ability-gates, Refrain pickups, lore, save, reactive
+ * audio, and dev tools.
  *
- * Stays deliberately thin: it wires data (zones/enemies) to systems (movement,
- * audio, combat, save) and entities (player/enemy). No content is hardcoded —
- * it all comes from `/src/data`, so new zones/enemies need no scene changes.
+ * Stays deliberately thin: it wires data (`/src/data`) to systems (movement,
+ * audio, combat AI, save) and entities (player/enemy/boss). No content is
+ * hardcoded here — new zones/enemies/bosses are data edits, no scene changes.
  */
 
 import Phaser from 'phaser';
@@ -15,6 +16,8 @@ import { getRefrain } from '../data/refrains';
 import { ENEMIES, getEnemy } from '../data/enemies';
 import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
+import { Boss } from '../entities/Boss';
+import { getBoss, BOSSES } from '../data/bosses';
 import { InputManager } from '../core/Input';
 import { AudioDirector } from '../systems/AudioDirector';
 import { WebAudioToneBackend } from '../systems/WebAudioBackend';
@@ -22,13 +25,20 @@ import { DebugOverlay } from '../dev/DebugOverlay';
 import { DevConsole, type DevCommandHost } from '../dev/DevConsole';
 import { SaveSystem, defaultSave, type SaveData } from '../core/SaveSystem';
 import { Hud } from '../ui/Hud';
+import { BossBar } from '../ui/BossBar';
 import { DialoguePanel } from '../ui/DialoguePanel';
 import { ZoneMap } from '../world/ZoneMap';
 import { Unraveling } from '../world/Unraveling';
 import { buildTileGrid } from '../world/mapgen';
 import { getMapSpec, TILE_SIZE } from '../data/maps';
-import { tilesetKey } from '../assets/placeholders';
-import { REST_POINT_KEY, LORE_KEY, GATE_KEY, EXIT_KEY, REFRAIN_KEY } from '../assets/placeholders';
+import {
+  tilesetKey,
+  REST_POINT_KEY,
+  LORE_KEY,
+  GATE_KEY,
+  EXIT_KEY,
+  REFRAIN_KEY,
+} from '../assets/placeholders';
 import type { RefrainPickup } from '../data/zones';
 import { GAME_TITLE, COMBAT } from '../core/config';
 
@@ -60,6 +70,8 @@ interface Projectile {
   vx: number;
   vy: number;
   life: number;
+  /** Damage dealt to the player (enemy projectiles only). */
+  damage?: number;
 }
 
 export class GameScene extends Phaser.Scene implements DevCommandHost {
@@ -72,6 +84,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private devConsole!: DevConsole;
   private saves!: SaveSystem;
   private hud!: Hud;
+  private bossBar!: BossBar;
   private dialogue!: DialoguePanel;
   private map!: ZoneMap;
   private interactables: Interactable[] = [];
@@ -80,7 +93,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private pickups: PickupObj[] = [];
   private transitioning = false;
   private enemies: Enemy[] = [];
+  private bosses: Boss[] = [];
   private projectiles: Projectile[] = [];
+  private enemyProjectiles: Projectile[] = [];
   private meleeCooldown = 0;
   private castCooldown = 0;
   private godmode = false;
@@ -175,8 +190,11 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     }
 
     this.enemies = [];
+    this.bosses = [];
     this.projectiles = [];
+    this.enemyProjectiles = [];
     this.spawnInitialEnemies(zone.defaultSpawn);
+    for (const bs of zone.bosses) this.addBoss(bs.bossId, bs.x, bs.y);
 
     // Systems.
     this.controls = new InputManager(this);
@@ -189,6 +207,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
     // UI + dev tooling.
     this.hud = new Hud(this);
+    this.bossBar = new BossBar(this);
     this.dialogue = new DialoguePanel(this);
     this.overlay = new DebugOverlay(this);
     this.devConsole = new DevConsole(this);
@@ -206,6 +225,12 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     const enemy = new Enemy(this, getEnemy(enemyId), x, y);
     this.physics.add.collider(enemy.sprite, this.map.layer);
     this.enemies.push(enemy);
+  }
+
+  private addBoss(bossId: string, x: number, y: number): void {
+    const boss = new Boss(this, getBoss(bossId), x, y);
+    this.physics.add.collider(boss.sprite, this.map.layer);
+    this.bosses.push(boss);
   }
 
   private title(): void {
@@ -237,7 +262,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     }
 
     this.updateEnemies(delta, consoleOpen);
+    this.updateBosses(delta, consoleOpen);
     this.updateProjectiles(delta);
+    this.updateEnemyProjectiles(delta);
 
     if (this.player.isDead) this.respawn();
 
@@ -252,6 +279,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       `zone ${this.zoneId}`,
       `light ${this.player.lightValue.toFixed(0)}`,
       `enemies ${this.enemies.length}`,
+      `bosses ${this.bosses.length}`,
       `invuln ${this.player.isInvulnerable ? 'ON' : 'off'}`,
       `tension ${this.audio.gainOf('tension').toFixed(1)}`,
       `refrains ${this.save.refrains.length}`,
@@ -282,6 +310,11 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       if (e.isDead) continue;
       const d = Phaser.Math.Distance.Between(cx, cy, e.sprite.x, e.sprite.y);
       if (d <= COMBAT.melee.radius + e.def.frame.w / 2) e.takeHit(COMBAT.melee.damage);
+    }
+    for (const b of this.bosses) {
+      if (b.isDead) continue;
+      const d = Phaser.Math.Distance.Between(cx, cy, b.sprite.x, b.sprite.y);
+      if (d <= COMBAT.melee.radius + b.def.frame.w / 2) b.takeHit(COMBAT.melee.damage);
     }
 
     const slash = this.add
@@ -330,6 +363,21 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
           break;
         }
       }
+      if (proj.life <= 0) continue;
+      for (const b of this.bosses) {
+        if (b.isDead) continue;
+        const d = Phaser.Math.Distance.Between(
+          proj.sprite.x,
+          proj.sprite.y,
+          b.sprite.x,
+          b.sprite.y,
+        );
+        if (d <= b.def.frame.w / 2 + 3) {
+          b.takeHit(COMBAT.cast.damage);
+          proj.life = 0;
+          break;
+        }
+      }
     }
     // Cull expired / out-of-bounds projectiles.
     this.projectiles = this.projectiles.filter((proj) => {
@@ -362,14 +410,97 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.enemies = this.enemies.filter((e) => !e.isDead);
   }
 
-  /** 0..1 combat tension from the most-engaged enemy — drives the audio crossfade. */
-  private combatTension(): number {
-    let t = 0;
-    for (const e of this.enemies) {
-      if (e.isDead) continue;
-      t = Math.max(t, 0.85); // any live enemy in the zone keeps the tension layer up
+  private updateBosses(dtMs: number, frozen: boolean): void {
+    const playerPos = this.player.position;
+    let engaged: Boss | null = null;
+    for (const b of this.bosses) {
+      if (b.isDead) continue;
+      if (frozen) {
+        b.sprite.setVelocity(0, 0);
+        continue;
+      }
+      const decision = b.update(dtMs, playerPos);
+      if (decision.attackActive) this.resolveBossAttack(b, decision.pattern);
+      // The boss the player is fighting drives the boss bar.
+      const d = Phaser.Math.Distance.Between(playerPos.x, playerPos.y, b.sprite.x, b.sprite.y);
+      if (d <= b.def.ai.aggroRange) engaged = b;
     }
-    return t;
+    if (engaged) this.bossBar.show(engaged.def.name, engaged.healthFraction, engaged.phaseName);
+    else this.bossBar.hide();
+    this.bosses = this.bosses.filter((b) => !b.isDead);
+  }
+
+  /** Turn a boss attack pattern into real damage/projectiles (multi-phase combat). */
+  private resolveBossAttack(boss: Boss, pattern: 'strike' | 'radial' | 'volley'): void {
+    const bx = boss.sprite.x;
+    const by = boss.sprite.y;
+    const p = this.player.position;
+    if (pattern === 'strike') {
+      const d = Phaser.Math.Distance.Between(p.x, p.y, bx, by);
+      if (d <= boss.def.frame.w / 2 + 22) this.player.takeDamage(boss.def.damage);
+      this.cameras.main.shake(120, 0.004);
+    } else if (pattern === 'radial') {
+      // A chord burst: a ring of sung-light outward.
+      const n = 12;
+      for (let i = 0; i < n; i++) {
+        const a = (Math.PI * 2 * i) / n;
+        this.spawnEnemyProjectile(
+          bx,
+          by,
+          Math.cos(a) * 150,
+          Math.sin(a) * 150,
+          boss.def.projectileDamage,
+        );
+      }
+    } else {
+      // Volley: three aimed notes with a slight spread.
+      const base = Math.atan2(p.y - by, p.x - bx);
+      for (const off of [-0.18, 0, 0.18]) {
+        const a = base + off;
+        this.spawnEnemyProjectile(
+          bx,
+          by,
+          Math.cos(a) * 200,
+          Math.sin(a) * 200,
+          boss.def.projectileDamage,
+        );
+      }
+    }
+  }
+
+  private spawnEnemyProjectile(x: number, y: number, vx: number, vy: number, damage: number): void {
+    const sprite = this.add.circle(x, y, 3, 0xff7a3c, 1).setDepth(40);
+    this.enemyProjectiles.push({ sprite, vx, vy, life: 2400, damage });
+  }
+
+  private updateEnemyProjectiles(dtMs: number): void {
+    const dt = dtMs / 1000;
+    const p = this.player.position;
+    for (const proj of this.enemyProjectiles) {
+      proj.life -= dtMs;
+      proj.sprite.x += proj.vx * dt;
+      proj.sprite.y += proj.vy * dt;
+      if (Phaser.Math.Distance.Between(proj.sprite.x, proj.sprite.y, p.x, p.y) <= 11) {
+        this.player.takeDamage(proj.damage ?? 0);
+        proj.life = 0;
+      }
+    }
+    this.enemyProjectiles = this.enemyProjectiles.filter((proj) => {
+      const out =
+        proj.life <= 0 ||
+        proj.sprite.x < 0 ||
+        proj.sprite.y < 0 ||
+        proj.sprite.x > this.physics.world.bounds.width ||
+        proj.sprite.y > this.physics.world.bounds.height;
+      if (out) proj.sprite.destroy();
+      return !out;
+    });
+  }
+
+  /** 0..1 combat tension from live enemies/bosses — drives the audio crossfade. */
+  private combatTension(): number {
+    if (this.bosses.some((b) => !b.isDead)) return 1; // boss fight = full tension
+    return this.enemies.some((e) => !e.isDead) ? 0.85 : 0;
   }
 
   private respawn(): void {
@@ -383,9 +514,13 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.player.setPosition(this.save.spawn.x, this.save.spawn.y);
     this.cameras.main.flash(300, 255, 242, 196);
     this.flash('The light gutters — you wake at the last rest.');
-    // Clear the room so you don't immediately die again.
+    // Clear the room so you don't immediately die again. A boss, however, is the
+    // region's standing threat — reloading the zone resets it to full.
     for (const e of this.enemies) e.destroy();
     this.enemies = [];
+    for (const proj of this.enemyProjectiles) proj.sprite.destroy();
+    this.enemyProjectiles = [];
+    this.bossBar.hide();
   }
 
   private handleInteract(): void {
@@ -517,6 +652,12 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     if (!ENEMIES[enemyId]) throw new Error(`unknown enemy ${enemyId}`);
     const p = this.player.position;
     this.addEnemy(enemyId, p.x + 50, p.y);
+  }
+
+  spawnBoss(bossId: string): void {
+    if (!BOSSES[bossId]) throw new Error(`unknown boss ${bossId}`);
+    const p = this.player.position;
+    this.addBoss(bossId, p.x + 120, p.y);
   }
 
   giveRefrain(id: string): void {

@@ -58,10 +58,13 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 
 ## ▶ M5 — Vertical slice: Ashchoir _(current)_
 
-- [ ] Biome identity: per-region tileset tint + an "unraveling" (ash creeping/eating sound) overlay
-- [ ] 2–3 enemy types live in the zone (wire `reliquary_warden`/`tideborn` or ashchoir-native foes)
-- [ ] A mini-boss (`miniboss_choirmaster`) with multi-phase telegraphs
-- [ ] Reactive audio in situ; environmental lore trail; a clear entrance + exit
+- [x] Biome identity: per-region tileset palette + an "unraveling" overlay (ash rises / glass sifts /
+      tide drifts)
+- [x] A mini-boss (`miniboss_choirmaster`) with multi-phase telegraphs (Adagio→Crescendo→Finale) and
+      three attack patterns (strike / radial chord / aimed volley); boss HP+phase bar; enemy projectiles
+- [ ] 2–3 distinct enemy types live in the zone (wire `tideborn`-style variety / an ashchoir-native foe)
+- [ ] Environmental lore trail through the region; a clear entrance + exit framing the boss arena
+- [ ] "Ash eats sound" mechanic: dampen audio/footsteps as you near the unraveling (Pillar 2 showcase)
 - [ ] Tune the whole loop so the region "sells the game"
 
 ## M5 — Vertical slice (Ashchoir)

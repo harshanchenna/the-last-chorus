@@ -45,6 +45,14 @@ export interface RefrainPickup {
   refrainId: string;
 }
 
+/** A placed boss encounter. */
+export interface BossSpawn {
+  id: string;
+  x: number;
+  y: number;
+  bossId: string;
+}
+
 export interface ZoneDef {
   id: string;
   name: string;
@@ -65,6 +73,7 @@ export interface ZoneDef {
   gates: Gate[];
   loreObjects: LoreObject[];
   refrainPickups: RefrainPickup[];
+  bosses: BossSpawn[];
   /** AudioDirector zone id for the ambient stem set. */
   ambientId: string;
 }
@@ -90,6 +99,8 @@ export const ZONES: Record<string, ZoneDef> = {
     ],
     // The first Refrain sits on the near side of the silence-gate it opens (BOTW loop).
     refrainPickups: [{ id: 'ashchoir.first_refrain', x: 260, y: 384, refrainId: 'first_refrain' }],
+    // The region climax: the Choirmaster holds the eastern hall beyond the gate.
+    bosses: [{ id: 'ashchoir.choirmaster', x: 740, y: 272, bossId: 'miniboss_choirmaster' }],
     ambientId: 'ashchoir',
   },
   glass_reliquary: {
@@ -106,6 +117,7 @@ export const ZONES: Record<string, ZoneDef> = {
     gates: [],
     loreObjects: [{ x: 300, y: 150, loreId: 'glass_reflection' }],
     refrainPickups: [],
+    bosses: [],
     ambientId: 'glass_reliquary',
   },
   drowned_hymn: {
@@ -122,6 +134,7 @@ export const ZONES: Record<string, ZoneDef> = {
     gates: [],
     loreObjects: [{ x: 300, y: 150, loreId: 'drowned_bell' }],
     refrainPickups: [],
+    bosses: [],
     ambientId: 'drowned_hymn',
   },
 };

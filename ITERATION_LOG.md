@@ -181,3 +181,41 @@ the save now (with a real migration) keeps the day-one promise that the format c
 **Next** → M5: the Ashchoir vertical slice — biome identity (tileset tint + an "unraveling/ash eats
 sound" overlay), 2–3 enemy types, a multi-phase mini-boss, reactive audio + lore trail end-to-end. The
 proof-of-concept that sells the game.
+
+---
+
+## 2026-06-18 — Cycle 5: M5a/b — biome identity + the Choirmaster mini-boss
+
+**Built**
+
+- **M5a — biome identity:** each zone declares a tile palette + an unraveling type; BootScene generates
+  one tinted tileset per region (warm char / cold glass / teal tide). `world/Unraveling.ts` adds the
+  signature decay overlay as a camera-fixed particle drift (embers rising, glints sifting, tidal drift).
+- **M5b — the mini-boss:** pure `systems/bossAI.ts` — a multi-phase state machine. Phases are chosen by
+  health fraction and change telegraph timing, move speed, and which attack patterns are available;
+  pattern choice cycles deterministically (testable). `data/bosses.ts` defines **The Choirmaster**
+  (260 HP, phases Adagio→Crescendo→Finale). `entities/Boss.ts` resolves it to a 64×64 sprite with a
+  phase-scaled telegraph tell + big death-mote burst. The scene resolves the three patterns: **strike**
+  (melee), **radial** (a 12-shot chord ring), **volley** (3 aimed sung-light notes); enemy projectiles
+  now exist and damage the player. New `ui/BossBar` shows boss light + current phase. A boss fight
+  pins audio tension to full. Placed in Ashchoir's eastern hall beyond the silence-gate; also
+  summonable via the dev console `boss <id>` command.
+- Tests: bossAI phase selection + telegraph→pattern cycling + single-frame damage window; content guard
+  that placed bosses reference real defs with correctly-ordered phases.
+
+**Why**
+
+The mini-boss is the part of M5 that "sells the game" (seed M5). Multi-phase telegraphs are the depth
+ceiling of Pillar 3 — keeping the phase machine pure means the escalation curve is tuned with tests, not
+playtests alone.
+
+**Verified**
+
+- `npm test` → 58 passing (bossAI 5 + content guard). Build + lint clean. Boots HTTP 200.
+
+**Try it:** `give first_refrain`, cross the gate east, and fight the Choirmaster — or `boss
+miniboss_choirmaster` to summon it anywhere. Watch the phase name on the boss bar change as it weakens.
+
+**Next** → finish M5: a second/third enemy type live in Ashchoir, an environmental lore trail framing
+the arena, and the "ash eats sound" audio-dampening showcase. Then M6 (second region, dialogue,
+relight-vs-rest choice, real-asset swap).

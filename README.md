@@ -30,11 +30,13 @@ Then open the URL Vite prints (default <http://localhost:5173>).
 | Interact               | `E` (save at a rest-point, read lore) | B                  |
 | Dev console            | `` ` `` (backtick) to toggle          | —                  |
 
-> Status now: **M4 complete (Refrains & gating)** — the full come-back-stronger loop is playable with
-> zero dev commands: walk down from spawn to pick up the **Refrain of the Held Breath**, watch the
-> silence-void gate open, claim the secret beyond it, and cross east into the Glass Reliquary. Plus
-> everything before it: tile geometry + collision, zone transitions, lore panel, light-meter + Refrain
-> HUD, melee + ranged light attacks, telegraphing enemies, death + rest-point respawn, dash i-frames.
+> Status now: **M5 in progress (Ashchoir vertical slice)** — regions now have distinct tile palettes and
+> a signature "unraveling" particle overlay, and Ashchoir has a multi-phase mini-boss, **The
+> Choirmaster** (strike / radial chord / aimed volley; phases escalate as it weakens). Pick up the
+> **Refrain of the Held Breath** below spawn to open the silence-gate, cross east, and fight it — or
+> `boss miniboss_choirmaster` in the dev console to summon it. Plus everything before: tile collision,
+> zone transitions, lore panel, light + Refrain HUD, melee/ranged light attacks, telegraphing enemies,
+> death + rest-point respawn, dash i-frames.
 
 ### Dev console commands
 

@@ -68,6 +68,15 @@ Single versioned `SaveData` object (`zoneId`, `spawn`, `lightCapacity`, `refrain
 Explicit save at rest-points; autosave on zone transition. Versioned from day one with a `migrate()`
 seam so the shape can grow safely.
 
+## Bosses
+
+- **The Choirmaster** (Ashchoir mini-boss) — what remains of the cantor who once led the god's hymn,
+  now conducting an empty choir. Three phases escalate as its light drains: **Adagio** (slow, long
+  telegraphs, strikes + the occasional radial "chord"), **Crescendo** (faster, adds an aimed volley),
+  **Finale** (frantic, mostly radial chords + volleys). Each phase shortens the read window — the
+  player must internalize the tells. Holds the eastern hall beyond the silence-gate, so reaching the
+  Glass Reliquary means passing (or beating) it.
+
 ## Decisions
 
 - **Health reads as light, not a red bar** (asset spec §5) — reinforces "light is your power."
