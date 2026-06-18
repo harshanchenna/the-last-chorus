@@ -4,14 +4,19 @@ import {
   NullAudioBackend,
   type AudioBackend,
   type Stem,
+  type SfxName,
 } from '../systems/AudioDirector';
 
 /** Records the last gain set per stem so we can assert on the audible output. */
 class RecordingBackend implements AudioBackend {
   gains: Partial<Record<Stem, number>> = {};
+  sfx: Array<{ name: SfxName; volume: number }> = [];
   ensureStem(): void {}
   setGain(_zone: string, stem: Stem, gain: number): void {
     this.gains[stem] = gain;
+  }
+  playSfx(name: SfxName, volume: number): void {
+    this.sfx.push({ name, volume });
   }
   releaseZone(): void {}
 }
@@ -66,5 +71,17 @@ describe('AudioDirector reactive stem mixing', () => {
     expect(d.silenceLevel).toBe(0.75);
     expect(backend.gains.base).toBeCloseTo(0.25, 5); // 1 * (1 - 0.75)
     expect(d.gainOf('base')).toBeCloseTo(1, 5); // raw mix unchanged
+  });
+
+  it('plays SFX scaled by the current silence (sound dampens in the unraveling)', () => {
+    const backend = new RecordingBackend();
+    const d = new AudioDirector(backend);
+    d.setZone('ashchoir');
+    d.sfx('blade');
+    expect(backend.sfx.at(-1)).toEqual({ name: 'blade', volume: 1 });
+    d.setSilence(0.6);
+    d.sfx('hit');
+    expect(backend.sfx.at(-1)!.name).toBe('hit');
+    expect(backend.sfx.at(-1)!.volume).toBeCloseTo(0.4, 5); // 1 - 0.6
   });
 });

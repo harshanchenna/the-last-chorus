@@ -587,3 +587,32 @@ polish that make the two-region demo feel like a finished slice (and quietly rei
 
 **Next** → audio SFX layer (Pillar 2 feel), then ship one real asset end-to-end + a bundle split, then
 a playtest bug-bash.
+
+---
+
+## 2026-06-18 — Cycle 18: audio SFX layer (Pillar 2 — the world is a song)
+
+**Built**
+
+- **One-shot SFX** through the existing audio abstraction: `AudioBackend.playSfx` + `AudioDirector.sfx`,
+  with tonal recipes in `WebAudioToneBackend` (each a short oscillator with a pitch slide + envelope —
+  notes, not foley, per asset spec §6.2): `blade`, `cast`, `hit`, `hurt`, `dash`, `pickup` (a rising
+  two-note chime), `rest` (a warm settling note).
+- Wired to events in `GameScene`: blade swing + landing hits, cast + projectile hits, dash (rising
+  edge), taking damage (`damagePlayer` helper, only when not invulnerable), Refrain pickup, rest-save.
+- SFX volume is **scaled by the current silence**, so combat/interaction sounds also dampen as the
+  unraveling eats sound (consistent with the ambient bed). Logic lives in `AudioDirector` (tested).
+
+**Why**
+
+Pillar 2 — audio is a first-class system. Ambient stems already react to zone/tension; adding tonal SFX
+makes combat and interaction feel responsive and keeps the whole soundscape "musical," even on
+placeholders. Keeping the decision (volume vs silence) in the pure director means it's test-backed.
+
+**Verified**
+
+- `npm test` → 74 passing (added an SFX-scaling test). `npm run playtest` → 19/19, no page errors.
+  Build + lint clean. (Audio itself isn't screenshot-validatable; the director logic is unit-tested and
+  the synth is audible via `npm run dev`.)
+
+**Next** → ship one real asset end-to-end + a bundle split, then a playtest bug-bash across the full arc.

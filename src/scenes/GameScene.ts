@@ -126,6 +126,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private enemyProjectiles: Projectile[] = [];
   private meleeCooldown = 0;
   private castCooldown = 0;
+  private prevDashing = false;
   private godmode = false;
   private altar: Altar | null = null;
   private altarSprite: Phaser.GameObjects.Sprite | null = null;
@@ -448,6 +449,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       this.handleAltarChoice();
     } else if (!consoleOpen) {
       this.player.update(this.controls, delta);
+      // Dash SFX on the rising edge of the dash window.
+      if (this.player.isDashing && !this.prevDashing) this.audio.sfx('dash');
+      this.prevDashing = this.player.isDashing;
       if (this.controls.interactPressed()) this.handleInteract();
       this.handleAttacks(delta);
       this.checkPickups();
@@ -490,6 +494,13 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
   // ---- Combat ----
 
+  /** Damage the player + play the hurt note when it actually lands (not while invuln). */
+  private damagePlayer(amount: number): void {
+    const wasInvuln = this.player.isInvulnerable;
+    this.player.takeDamage(amount);
+    if (!wasInvuln) this.audio.sfx('hurt');
+  }
+
   private handleAttacks(dtMs: number): void {
     this.meleeCooldown = Math.max(0, this.meleeCooldown - dtMs);
     this.castCooldown = Math.max(0, this.castCooldown - dtMs);
@@ -500,22 +511,31 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   /** Blade-of-light melee: a short-lived arc hitbox ahead of the player. */
   private meleeSwing(): void {
     this.meleeCooldown = COMBAT.melee.cooldownMs;
+    this.audio.sfx('blade');
     const aim = this.player.aimVector;
     const p = this.player.position;
     const cx = p.x + aim.x * COMBAT.melee.reach;
     const cy = p.y + aim.y * COMBAT.melee.reach;
 
     // Resolve hits immediately (deterministic), then show the slash.
+    let landed = false;
     for (const e of this.enemies) {
       if (e.isDead) continue;
       const d = Phaser.Math.Distance.Between(cx, cy, e.sprite.x, e.sprite.y);
-      if (d <= COMBAT.melee.radius + e.def.frame.w / 2) e.takeHit(COMBAT.melee.damage);
+      if (d <= COMBAT.melee.radius + e.def.frame.w / 2) {
+        e.takeHit(COMBAT.melee.damage);
+        landed = true;
+      }
     }
     for (const b of this.bosses) {
       if (b.isDead) continue;
       const d = Phaser.Math.Distance.Between(cx, cy, b.sprite.x, b.sprite.y);
-      if (d <= COMBAT.melee.radius + b.def.frame.w / 2) b.takeHit(COMBAT.melee.damage);
+      if (d <= COMBAT.melee.radius + b.def.frame.w / 2) {
+        b.takeHit(COMBAT.melee.damage);
+        landed = true;
+      }
     }
+    if (landed) this.audio.sfx('hit');
 
     const slash = this.add
       .arc(cx, cy, COMBAT.melee.radius, 0, 360, false, 0xfff2c4, 0.7)
@@ -532,6 +552,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   /** Sung-light cast: a travelling light mote that damages the first enemy it meets. */
   private castShot(): void {
     this.castCooldown = COMBAT.cast.cooldownMs;
+    this.audio.sfx('cast');
     const aim = this.player.aimVector;
     const p = this.player.position;
     const sprite = this.add.circle(p.x, p.y, 3, 0x9ad8ff, 1).setDepth(40);
@@ -559,6 +580,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
         );
         if (d <= e.def.frame.w / 2 + 3) {
           e.takeHit(COMBAT.cast.damage);
+          this.audio.sfx('hit');
           proj.life = 0;
           break;
         }
@@ -574,6 +596,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
         );
         if (d <= b.def.frame.w / 2 + 3) {
           b.takeHit(COMBAT.cast.damage);
+          this.audio.sfx('hit');
           proj.life = 0;
           break;
         }
@@ -603,7 +626,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       const decision = e.update(dtMs, playerPos);
       if (decision.attackActive) {
         const d = Phaser.Math.Distance.Between(playerPos.x, playerPos.y, e.sprite.x, e.sprite.y);
-        if (d <= e.def.attackRange + 14) this.player.takeDamage(e.def.damage);
+        if (d <= e.def.attackRange + 14) this.damagePlayer(e.def.damage);
       }
     }
     // Drop dead enemies from the list.
@@ -664,7 +687,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     const p = this.player.position;
     if (pattern === 'strike') {
       const d = Phaser.Math.Distance.Between(p.x, p.y, bx, by);
-      if (d <= boss.def.frame.w / 2 + 22) this.player.takeDamage(boss.def.damage);
+      if (d <= boss.def.frame.w / 2 + 22) this.damagePlayer(boss.def.damage);
       this.cameras.main.shake(120, 0.004);
     } else if (pattern === 'radial') {
       // A chord burst: a ring of sung-light outward.
@@ -708,7 +731,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       proj.sprite.x += proj.vx * dt;
       proj.sprite.y += proj.vy * dt;
       if (Phaser.Math.Distance.Between(proj.sprite.x, proj.sprite.y, p.x, p.y) <= 11) {
-        this.player.takeDamage(proj.damage ?? 0);
+        this.damagePlayer(proj.damage ?? 0);
         proj.life = 0;
       }
     }
@@ -792,6 +815,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       this.save.lightCapacity = this.player.lightValue || this.save.lightCapacity;
       this.saves.save(this.save);
       this.player.restoreLight();
+      this.audio.sfx('rest');
       this.flash('Saved at rest-point. Light restored.');
     } else {
       const lore = getLore(near.refId);
@@ -1011,6 +1035,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
   private collectPickup(pk: PickupObj): void {
     if (!this.save.pickups.includes(pk.def.id)) this.save.pickups.push(pk.def.id);
+    this.audio.sfx('pickup');
     this.refrainPickupFx(pk.sprite.x, pk.sprite.y);
     pk.sprite.destroy();
     // Grants the Refrain, persists, opens any now-passable gates, and flashes.

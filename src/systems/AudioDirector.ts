@@ -15,12 +15,17 @@
 
 export type Stem = 'base' | 'melody' | 'tension';
 
+/** One-shot sound events — tonal, part of the score, not foley (asset spec §6.2). */
+export type SfxName = 'blade' | 'cast' | 'hit' | 'hurt' | 'dash' | 'pickup' | 'rest';
+
 /** Pluggable sound output. Keeps mixing logic decoupled from WebAudio/Phaser. */
 export interface AudioBackend {
   /** Ensure a looping stem exists (idempotent). */
   ensureStem(zoneId: string, stem: Stem): void;
   /** Set a stem's current gain, 0..1. */
   setGain(zoneId: string, stem: Stem, gain: number): void;
+  /** Play a one-shot SFX at the given volume (0..1). */
+  playSfx(name: SfxName, volume: number): void;
   /** Stop and release everything for a zone. */
   releaseZone(zoneId: string): void;
 }
@@ -29,6 +34,7 @@ export interface AudioBackend {
 export class NullAudioBackend implements AudioBackend {
   ensureStem(): void {}
   setGain(): void {}
+  playSfx(): void {}
   releaseZone(): void {}
 }
 
@@ -105,6 +111,14 @@ export class AudioDirector {
       else if (st.current > st.target) st.current = Math.max(st.target, st.current - step);
       this.backend.setGain(this.zoneId!, s, st.current * soundLevel);
     });
+  }
+
+  /**
+   * Fire a one-shot SFX. Scaled by the current silence so combat/interaction
+   * sounds also dampen as the unraveling eats sound (Pillar 2 consistency).
+   */
+  sfx(name: SfxName): void {
+    this.backend.playSfx(name, 1 - this.silence);
   }
 
   /** Current mixed (pre-silence) gain for a stem — for the debug overlay + tests. */

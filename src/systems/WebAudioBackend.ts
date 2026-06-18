@@ -10,7 +10,34 @@
  * `resume()` is called on first input.
  */
 
-import type { AudioBackend, Stem } from './AudioDirector';
+import type { AudioBackend, Stem, SfxName } from './AudioDirector';
+
+/**
+ * One-shot SFX recipes — kept tonal/musical (Pillar 2: SFX are part of the score,
+ * not foley). Each is a short oscillator with a pitch slide + an amplitude envelope.
+ */
+interface SfxRecipe {
+  wave: OscillatorType;
+  from: number;
+  to: number;
+  dur: number;
+  peak: number;
+}
+
+const SFX: Record<SfxName, SfxRecipe[]> = {
+  blade: [{ wave: 'triangle', from: 560, to: 280, dur: 0.12, peak: 0.5 }],
+  cast: [{ wave: 'sine', from: 540, to: 760, dur: 0.18, peak: 0.4 }],
+  hit: [{ wave: 'square', from: 220, to: 120, dur: 0.09, peak: 0.45 }],
+  hurt: [{ wave: 'sawtooth', from: 160, to: 90, dur: 0.18, peak: 0.5 }],
+  dash: [{ wave: 'triangle', from: 300, to: 540, dur: 0.12, peak: 0.32 }],
+  // A small rising two-note chime — gathering a piece of the song should reward.
+  pickup: [
+    { wave: 'sine', from: 660, to: 660, dur: 0.14, peak: 0.4 },
+    { wave: 'sine', from: 990, to: 990, dur: 0.22, peak: 0.4 },
+  ],
+  // A warm, settling low note for resting/saving.
+  rest: [{ wave: 'sine', from: 330, to: 247, dur: 0.45, peak: 0.45 }],
+};
 
 /** Base pitch per zone gives each dead god its own tonal identity (asset spec §6.1). */
 const ZONE_ROOT_HZ: Record<string, number> = {
@@ -81,6 +108,29 @@ export class WebAudioToneBackend implements AudioBackend {
   setGain(zoneId: string, stem: Stem, gain: number): void {
     const n = this.nodes.get(`${zoneId}:${stem}`);
     if (n && this.ctx) n.gain.gain.setTargetAtTime(gain, this.ctx.currentTime, 0.03);
+  }
+
+  playSfx(name: SfxName, volume: number): void {
+    if (volume <= 0.01 || !this.ensureCtx() || !this.ctx || !this.master) return;
+    const ctx = this.ctx;
+    let when = ctx.currentTime;
+    for (const r of SFX[name]) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = r.wave;
+      osc.frequency.setValueAtTime(r.from, when);
+      osc.frequency.linearRampToValueAtTime(r.to, when + r.dur);
+      // Quick attack, smooth decay so it reads as a note, not a click.
+      const peak = r.peak * volume;
+      gain.gain.setValueAtTime(0, when);
+      gain.gain.linearRampToValueAtTime(peak, when + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, when + r.dur);
+      osc.connect(gain);
+      gain.connect(this.master);
+      osc.start(when);
+      osc.stop(when + r.dur + 0.02);
+      when += r.dur * 0.55; // slight overlap for multi-note recipes (the chime)
+    }
   }
 
   releaseZone(zoneId: string): void {
