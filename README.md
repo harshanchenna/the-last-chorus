@@ -28,6 +28,7 @@ Then open the URL Vite prints (default <http://localhost:5173>).
 | Blade of light (melee) | `J`                                   | X                  |
 | Sung light (cast)      | `K`                                   | Y                  |
 | Interact               | `E` (save at a rest-point, read lore) | B                  |
+| Journal / pause        | `P` or `Esc`                          | Start              |
 | Dev console            | `` ` `` (backtick) to toggle          | —                  |
 
 > Status now: **M5 complete — the Ashchoir vertical slice.** A full playable region: distinct biome

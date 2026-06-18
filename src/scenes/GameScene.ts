@@ -27,6 +27,7 @@ import { SaveSystem, defaultSave, type SaveData } from '../core/SaveSystem';
 import { Hud } from '../ui/Hud';
 import { BossBar } from '../ui/BossBar';
 import { DialoguePanel } from '../ui/DialoguePanel';
+import { PauseMenu } from '../ui/PauseMenu';
 import { ZoneMap } from '../world/ZoneMap';
 import { Unraveling } from '../world/Unraveling';
 import { buildTileGrid } from '../world/mapgen';
@@ -87,6 +88,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private hud!: Hud;
   private bossBar!: BossBar;
   private dialogue!: DialoguePanel;
+  private pauseMenu!: PauseMenu;
   private map!: ZoneMap;
   private interactables: Interactable[] = [];
   private exits: ZoneExitObj[] = [];
@@ -229,6 +231,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.hud = new Hud(this);
     this.bossBar = new BossBar(this);
     this.dialogue = new DialoguePanel(this);
+    this.pauseMenu = new PauseMenu(this);
     this.overlay = new DebugOverlay(this);
     this.devConsole = new DevConsole(this);
 
@@ -270,6 +273,19 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   override update(_time: number, delta: number): void {
     // Dev console toggle is always live.
     if (this.controls.devTogglePressed()) this.devConsole.toggle();
+
+    // Pause/journal toggle (not while typing in the dev console).
+    if (!this.devConsole.isOpen && this.controls.pausePressed()) {
+      this.pauseMenu.toggle(this.save);
+    }
+    if (this.pauseMenu.isOpen) {
+      this.player.sprite.setVelocity(0, 0);
+      for (const e of this.enemies) e.sprite.setVelocity(0, 0);
+      for (const b of this.bosses) b.sprite.setVelocity(0, 0);
+      this.overlay.markInputConsumed(false);
+      this.overlay.update(this.game);
+      return; // game is frozen while the journal is open
+    }
 
     const consoleOpen = this.devConsole.isOpen;
     if (this.pendingAltar) {

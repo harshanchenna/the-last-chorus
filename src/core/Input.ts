@@ -21,6 +21,7 @@ export class InputManager {
   private devWasDown = false;
   private meleeWasDown = false;
   private castWasDown = false;
+  private pauseWasDown = false;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -39,6 +40,8 @@ export class InputManager {
       interact: kb.addKey('E'),
       melee: kb.addKey('J'),
       cast: kb.addKey('K'),
+      pause: kb.addKey('P'),
+      pauseEsc: kb.addKey(Phaser.Input.Keyboard.KeyCodes.ESC),
       dev: kb.addKey(Phaser.Input.Keyboard.KeyCodes.BACKTICK),
     };
   }
@@ -92,6 +95,17 @@ export class InputManager {
     const isDown = (this.keys.cast?.isDown ?? false) || (this.pad?.Y ?? false);
     const edge = isDown && !this.castWasDown;
     this.castWasDown = isDown;
+    return edge;
+  }
+
+  /** True only on the frame pause was pressed (P / Esc / gamepad Start). */
+  pausePressed(): boolean {
+    const isDown =
+      (this.keys.pause?.isDown ?? false) ||
+      (this.keys.pauseEsc?.isDown ?? false) ||
+      (this.pad?.buttons[9]?.pressed ?? false);
+    const edge = isDown && !this.pauseWasDown;
+    this.pauseWasDown = isDown;
     return edge;
   }
 

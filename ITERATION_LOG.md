@@ -286,3 +286,27 @@ altar that lights up, and press `E` — then choose with `J` / `K`.
 
 **Next** → continue M6: a dialogue system + a rare wisp NPC, a pause/inventory menu (collected lore +
 Refrains + your choices), and the first real-asset swap through the manifest.
+
+---
+
+## 2026-06-18 — Cycle 8: M6b — pause/journal menu
+
+**Built**
+
+- `ui/PauseMenu` — a quiet journal overlay (P / Esc, or gamepad Start) that surfaces what the player has
+  gathered: Refrains (with their lore descriptions), lore fragments collected, and the choices made at
+  the gods' altars. Reading it is part of the atmosphere (Pillar 1), so it stays sparse and reverent.
+- Opening it freezes the game (player + enemies + bosses halt); the debug overlay keeps updating so FPS
+  is still visible. `pausePressed()` added to InputManager (keyboard + gamepad Start).
+
+**Why**
+
+The world accumulates meaning — Refrains, lore, irreversible choices — and the player needs a calm place
+to see it without leaving the world. It also makes the persistent save legible in-game.
+
+**Verified**
+
+- `npm test` → 62 passing. Build + lint clean. Boots HTTP 200.
+
+**Next** → flesh out the Glass Reliquary as a contrasting second region (cold/memory, low-swarm) with
+its own foes + altar, a rare wisp NPC + dialogue, and the first real-asset swap through the manifest.
