@@ -62,6 +62,7 @@ Toggle with `` ` `` then type `help`. Available: `teleport <x> <y>`, `spawn <ene
 
 ## Project docs
 
+- [`HANDOFF.md`](./HANDOFF.md) — pick-up guide: current status, how to continue, gotchas, next steps
 - [`AGENTS.md`](./AGENTS.md) — operating manual for any coding agent (Claude Code, Codex, …)
 - [`DESIGN.md`](./DESIGN.md) — world bible & design decisions
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md) — how the code is organized and why
