@@ -99,8 +99,10 @@ If the architecture starts fighting you, stop and refactor before piling on feat
 
 ## Milestone status
 
-Current: **M1 — Game feel** (movement/dash tuning, audio, gamepad). M0 (boot & loop) is complete. See
-`TODO.md` for the full roadmap (M0→M6+) and `ITERATION_LOG.md` for history.
+Current: **Playable MVP demo complete** (M0–M6 done). Full arc: title → prologue → in-world tutorial →
+two regions (combat, mini-bosses, the Refrain BOTW loop incl. the dash-leap) → relight/rest choices →
+ending + teaser. Validate with `npm run playtest` (visual harness). Post-MVP work — real art/audio
+drop-ins, Glass-native enemies, the Drowned Hymn, CI — is in `TODO.md`; history in `ITERATION_LOG.md`.
 
 ## Git conventions
 

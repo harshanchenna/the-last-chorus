@@ -84,12 +84,23 @@ try {
   s = await state(page);
   check('an enemy is live for the combat read', s.enemies >= 1, `enemies ${s.enemies}`);
 
-  // ---- 4. Glass Reliquary overview ----
-  console.log('\n[4] Glass Reliquary — overview (zone card)');
-  await gotoZone(page, 'glass_reliquary');
+  // ---- 4. Walk-on transition Ashchoir → Glass Reliquary (fade + zone card) ----
+  console.log('\n[4] Walk east through the exit → Glass Reliquary');
+  await host(page, 'toggleGodmode'); // survive the arena on the way to the exit
+  await host(page, 'teleport', 900, 272);
+  await hold(page, 'ArrowRight', 1400);
+  await page.waitForFunction(
+    () => window.__lastChorus?.state().zone === 'glass_reliquary',
+    undefined,
+    {
+      timeout: 8000,
+    },
+  );
+  await host(page, 'toggleGodmode'); // back to normal
   await wait(550); // let the zone-name card fade in
   s = await state(page);
   await shot(page, '05-glass-overview');
+  check('walk-on exit transitions Ashchoir → Glass', s.zone === 'glass_reliquary', s.zone);
   const fracture = s.gates.find((g) => g.kind === 'chasm');
   check('has a chasm (fracture) gate', !!fracture, JSON.stringify(s.gates));
   check('fracture starts closed (no light_dash)', fracture && fracture.open === false);

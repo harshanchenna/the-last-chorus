@@ -4,11 +4,14 @@ A persistent, hand-authored 2D top-down action-adventure where **the world is a 
 Lonely, sacred, decaying — _Hyper Light Drifter_ / _Death's Door_ energy, with fast light-and-blade
 combat and reactive, stem-based audio. Not a roguelite: the world is authored, persistent, and saved.
 
-> Status: **M0–M5 complete, M6 (second region & choices) in progress** — two playable regions with
-> distinct biome identity, fast light-and-blade combat, telegraphing enemies + multi-phase mini-bosses,
-> two Refrains gating exploration, relight-vs-rest altar choices, a pause/journal menu, reactive
-> stem-based audio, and a save system. Everything renders on programmatic placeholders; real art/audio
-> drop in via the asset manifest with zero gameplay-code changes. (Details below.)
+> Status: **Playable MVP demo — complete.** A first run goes title → atmospheric prologue → in-world
+> tutorial → two distinct regions (fast light-and-blade combat, telegraphing enemies + multi-phase
+> mini-bosses, two Refrains gating exploration incl. a **dash-leap** across a fracture) →
+> bittersweet relight/rest altar choices → an **ending that teases the bigger picture**. Plus reactive
+> stem-based audio + tonal SFX, a pause/journal, fade transitions, and a versioned save. Everything is
+> on programmatic placeholders **except a real player sprite** — proving the asset pipeline drops in
+> real art with zero gameplay-code changes. The whole arc is validated by a visual playtest harness
+> (`npm run playtest`). (Details below.)
 
 ## Quick start (under a minute)
 

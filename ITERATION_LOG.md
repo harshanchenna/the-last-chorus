@@ -646,3 +646,34 @@ playtest` → 19/19; the player now renders as the Lantern-bearer sprite. Lint c
 
 **Next** → a playtest bug-bash across the full arc (title → prologue → tutorial → two regions →
 ending), fixing rough edges, to call the MVP demo done.
+
+---
+
+## 2026-06-18 — Cycle 20: full-arc playtest bug-bash → MVP demo complete
+
+**Built / fixed**
+
+- Expanded the default playtest into a **full-arc regression run** (20 checks): title → prologue →
+  tutorial hand-off → Refrain pickup → combat → **walk-on zone transition** (the fade path, previously
+  only the dev `goto` was covered) → zone card → chasm blocked → leap across → vault lore → journal →
+  both altars → ending + teaser → return to title. Every beat is screenshotted and asserted.
+- Reviewed every screenshot for rough edges; the real player sprite, biome palettes, prompts, cards,
+  and ending all read cleanly. No correctness bugs surfaced; the previously-untested walk-on transition
+  now has coverage and passes.
+
+**Why**
+
+The goal was a _polished, playable first MVP demo_. This cycle validates the whole experience end to
+end — visually and behaviourally — so the demo can be called done with confidence.
+
+**Verified**
+
+- `npm run playtest` → 20/20, no page errors. `npm test` → 74. Build (split chunks) + lint clean.
+
+**MVP demo status: complete.** A first-time player gets title → atmospheric intro → in-world tutorial →
+two distinct regions (combat, mini-bosses, the BOTW Refrain loop incl. the dash-leap) → bittersweet
+relight/rest choices → an ending that teases the larger world — all on placeholders except the real
+player sprite, every cycle validated by the visual harness.
+
+**Next (post-MVP)** → real art/audio drop-ins (the pipeline is proven), Glass-native enemy variety,
+the Drowned Hymn as the no-combat region, and CI.

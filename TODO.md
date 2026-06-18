@@ -80,14 +80,31 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 - [x] Dialogue system (multi-line, Interact-to-advance) + a rare wisp NPC in the Glass Reliquary
 - [x] Glass Reliquary is now a full second region: its own ranged mini-boss (**The Reliquary Echo**) +
       a god-of-memory altar with its own relight-vs-rest choice
-- [ ] Ship one actual real asset file (sprite/audio) end-to-end to close the loop visually
+- [x] Ship one actual real asset file end-to-end — a real 32×32 player sprite (`public/assets/player.png`,
+      `npm run gen:assets`); manifest-driven load, zero gameplay-code changes (proves seed §8)
 - [x] A second Refrain (`light_dash`) + a path gated on it — `chasm` gate kind (pure `systems/gating`):
       a fracture in the Glass Reliquary you must **dash** across, walling off the `glass_vault` memory
 - [ ] Glass-native enemy variety; the Drowned Hymn as the no-combat traversal/puzzle region (Pillar 4)
 - [x] **Visual playtest harness** (`playtest/`, Playwright): boots the real game headless, drives it
       with real input, screenshots + asserts live state. Validates rendering & feel (`npm run playtest`)
+- [x] Bundle split: `manualChunks` separates Phaser (~1.48 MB) from app code (~60 KB)
 - [ ] CI: GitHub Action running `test + build + lint` on push (+ optionally a headless `playtest`)
-- [ ] Bundle size: `manualChunks` / slimmer Phaser build before any ship
+
+## ✅ Playable MVP demo _(done)_ — intro → tutorial → demo → teaser
+
+- [x] Title screen (New Game / Continue) — Boot → Title → Game → End
+- [x] Atmospheric prologue + in-world tutorial (one quiet hint per verb) + floating interact prompts
+- [x] Demo ending: bittersweet reflection on the altar choices + a teaser of the bigger picture
+- [x] Polish: fade transitions + zone-entry name cards; tonal one-shot SFX (Pillar 2)
+- [x] Real player sprite shipped through the manifest; bundle split
+- [x] Full-arc playtest (20 checks) — title → prologue → tutorial → two regions → ending → title
+
+## Post-MVP backlog
+
+- [ ] Real art/audio drop-ins (pipeline proven): enemy sprites, ambient stems, SFX
+- [ ] Glass-native enemy variety; the Drowned Hymn as the no-combat traversal/puzzle region (Pillar 4)
+- [ ] CI: GitHub Action (`test + build + lint`, optional headless `playtest`)
+- [ ] Slimmer custom Phaser build to shrink the engine chunk
 
 ## M5 — Vertical slice (Ashchoir)
 
