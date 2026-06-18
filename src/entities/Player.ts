@@ -87,6 +87,11 @@ export class Player {
     return this.dashInvuln || this.hurtIframes > 0 || this.godmode;
   }
 
+  /** True only while mid-dash — used to leap chasm gates (light_dash grant). */
+  get isDashing(): boolean {
+    return this.mover.phase === 'dashing';
+  }
+
   /** Current facing as a unit vector — the direction attacks fire (Pillar 3). */
   get aimVector(): Vec2 {
     return facingToVector(this.mover.facing);

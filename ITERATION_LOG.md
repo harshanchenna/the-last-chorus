@@ -398,4 +398,43 @@ altar + choice) came from data + one manifest line.
 - `npm test` → 67 passing. Build + lint clean. Boots HTTP 200.
 
 **Next** → ship one real asset file end-to-end (prove the loader path visually), add a second Refrain
-(`light_dash`) + a path gated on it, and add CI. See `HANDOFF.md` for the full pick-up guide.
+(`light_dash`) + a path gated on it, and add CI.
+
+---
+
+## 2026-06-18 — Cycle 12: project hand-off tidy + the second Refrain (light_dash)
+
+**Built**
+
+- **Docs/onboarding:** removed the temporary `HANDOFF.md`, and captured the founding documents under a
+  new [`brief/`](./brief/) folder — the original `SEED_PROMPT.md` and full `ASSET_SPEC.md` (the
+  dangling `thelastchorusseedprompt.md` reference never existed in-repo). `AGENTS.md`, `ASSETS.md`,
+  `README.md`, and `CLAUDE.md` now point there, so a new agent/human gets the full intent in one place.
+- **Second Refrain — `light_dash` (the BOTW loop extended with a new grant type):**
+  - New pure, tested `systems/gating.ts` (`canPassGate` / `ownsRequirement`). Gates now have a **kind**:
+    `silence` (own the Refrain → opens permanently, as before) or **`chasm`** — a fracture you must
+    _dash across_ each time. The dash becomes a traversal key, not just a dodge (Pillar 3 × 4).
+  - The **Glass Reliquary** now seals a memory-vault (`glass_vault` lore) in its top-right corner behind
+    a `chasm` gate; the **Refrain of the Leap** pickup sits on the near side. Pure data + map geometry —
+    no scene content. `Player.isDashing` exposes the dash window the collider reads each overlap frame.
+  - The gate's look is data-driven by kind (silence = passable ghost when owned; chasm = a faint,
+    leapable shimmer when owned, an impassable void otherwise).
+
+**Why**
+
+`light_dash` was the highest-value M6 gameplay item: it proves the Refrain system generalizes to a
+_second, mechanically distinct_ grant (not just another key-to-a-door), deepening Pillar 4. Keeping the
+pass/own rules in a pure module means the new traversal mechanic is test-backed, and the chasm is one
+data edit per region from here on.
+
+**Verified**
+
+- `npm test` → 73 passing (gating 6 added; soft-lock + gate-needs-real-Refrain guards cover the new
+  placement automatically). Build + lint clean.
+
+**Try it:** `goto glass_reliquary`, grab the **Refrain of the Leap** (upper-right), then **dash**
+(Space) east through the shimmering fracture into the sealed vault. Walking into it bounces you back —
+you have to leap.
+
+**Next** → ship one real asset file end-to-end (now visually verifiable via the playtest harness), CI,
+and Glass-native enemy variety.

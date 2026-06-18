@@ -38,6 +38,10 @@ Then open the URL Vite prints (default <http://localhost:5173>).
 > **Refrain of the Held Breath** below spawn to open the silence-gate, cross the arena, and continue east
 > into the Glass Reliquary. Plus everything before: tile collision, zone transitions, lore panel, light +
 > Refrain HUD, melee/ranged light attacks, telegraphing enemies, death + rest-point respawn, dash i-frames.
+>
+> **M6 in progress** — two contrasting regions with mini-bosses + relight/rest altars, a pause/journal
+> menu, and a **second Refrain (the _Refrain of the Leap_)**: grab it in the Glass Reliquary and **dash**
+> across the shimmering fracture to reach a sealed memory-vault (a `chasm` gate — the dash is now a key).
 
 ### Dev console commands
 

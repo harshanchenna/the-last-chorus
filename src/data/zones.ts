@@ -6,6 +6,8 @@
  * be referenced here later; for M0 we describe an empty bounded room.
  */
 
+import type { GateKind } from '../systems/gating';
+
 export interface RestPoint {
   id: string;
   x: number;
@@ -20,13 +22,19 @@ export interface ZoneExit {
   toZone: string;
 }
 
-/** A silence-void barrier that blocks passage until a Refrain is owned (Pillar 4). */
+/** An ability-gated barrier that blocks passage until a Refrain is owned (Pillar 4). */
 export interface Gate {
   id: string;
   x: number;
   y: number;
   /** Refrain id required to pass. */
   requiresRefrain: string;
+  /**
+   * How the barrier behaves: 'silence' opens permanently once the Refrain is
+   * owned; 'chasm' is a fracture you must *dash* across each time (light_dash).
+   * Defaults to 'silence'.
+   */
+  kind?: GateKind;
 }
 
 /** A discoverable lore object placed in the world (Pillar 1). */
@@ -172,9 +180,15 @@ export const ZONES: Record<string, ZoneDef> = {
     defaultSpawn: { x: 240, y: 160 },
     restPoints: [{ id: 'glass.alcove', x: 220, y: 150 }],
     exits: [{ id: 'glass.west', x: 40, y: 272, toZone: 'ashchoir' }],
-    gates: [],
-    loreObjects: [{ x: 300, y: 150, loreId: 'glass_reflection' }],
-    refrainPickups: [],
+    // A fracture in the glass walls off a memory-vault: only a dash leaps it.
+    gates: [{ id: 'glass.fracture', x: 760, y: 80, requiresRefrain: 'light_dash', kind: 'chasm' }],
+    loreObjects: [
+      { x: 300, y: 150, loreId: 'glass_reflection' },
+      // The reward sealed beyond the fracture (Pillar 4 payoff).
+      { x: 860, y: 56, loreId: 'glass_vault' },
+    ],
+    // The second Refrain sits on the near side of the fracture it lets you cross.
+    refrainPickups: [{ id: 'glass.light_dash', x: 600, y: 80, refrainId: 'light_dash' }],
     enemySpawns: [{ enemyId: 'reliquary_warden', x: 520, y: 300 }],
     // A rare, haunting figure near the western approach.
     npcs: [{ id: 'glass.wisp', x: 140, y: 180, npcId: 'glass_wisp' }],

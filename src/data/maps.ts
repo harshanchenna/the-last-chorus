@@ -33,6 +33,9 @@ export const MAPS: Record<string, MapSpec> = {
     ],
   },
   // Glass Reliquary — colder, more fractured: crystalline shards as obstacles.
+  // A sealed memory-vault sits in the top-right corner, reachable only by dashing
+  // across the fracture (the gap at tiles y=4–5 in the divider) — see the
+  // 'glass.fracture' chasm gate + 'light_dash' Refrain in zones.ts.
   glass_reliquary: {
     widthTiles: 60,
     heightTiles: 34,
@@ -42,6 +45,11 @@ export const MAPS: Record<string, MapSpec> = {
       { x: 44, y: 22, w: 3, h: 3 },
       { x: 20, y: 24, w: 3, h: 3 },
       { x: 40, y: 6, w: 3, h: 3 },
+      // Vault divider (top-right), with a 2-tile fracture gap at y=4–5.
+      { x: 47, y: 1, w: 1, h: 3 },
+      { x: 47, y: 6, w: 1, h: 4 },
+      // Floor sealing the vault from below, so the fracture is the only way in.
+      { x: 47, y: 10, w: 13, h: 1 },
     ],
   },
   // Drowned Hymn — open, flooded: a few sunken walls. Low-combat traversal zone.

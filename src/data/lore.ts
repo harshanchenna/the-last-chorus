@@ -32,6 +32,11 @@ export const LORE: Record<string, LoreDef> = {
     title: 'Your Own Reflection, Older',
     text: 'The glass shows you a moment that has not happened yet — and you, in it, are tired of carrying the light.',
   },
+  glass_vault: {
+    id: 'glass_vault',
+    title: 'Across the Fracture',
+    text: 'A shelf of glass jars, each holding one remembered note. One is still warm. The god kept the parts of itself it could not bear to sing.',
+  },
   drowned_bell: {
     id: 'drowned_bell',
     title: 'A Bell Underwater',

@@ -19,6 +19,13 @@ export const REFRAINS: Record<string, RefrainDef> = {
     description: 'The first note a god forgets is the one that let you cross the quiet.',
     grants: 'cross_silence',
   },
+  light_dash: {
+    id: 'light_dash',
+    name: 'Refrain of the Leap',
+    description:
+      'A note sung in the half-second of a fall. Hold it and the fracture cannot find you — but only while it rings.',
+    grants: 'light_dash',
+  },
 };
 
 export function getRefrain(id: string): RefrainDef {

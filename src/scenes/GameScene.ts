@@ -31,6 +31,7 @@ import { DialoguePanel } from '../ui/DialoguePanel';
 import { PauseMenu } from '../ui/PauseMenu';
 import { ZoneMap } from '../world/ZoneMap';
 import { Unraveling } from '../world/Unraveling';
+import { canPassGate, ownsRequirement, type GateKind } from '../systems/gating';
 import { buildTileGrid } from '../world/mapgen';
 import { getMapSpec, TILE_SIZE } from '../data/maps';
 import {
@@ -60,6 +61,8 @@ interface GateObj {
   sprite: Phaser.GameObjects.Sprite;
   body: Phaser.Physics.Arcade.StaticBody;
   requiresRefrain: string;
+  kind: GateKind;
+  /** True once the required Refrain is owned (drives the gate's look). */
   open: boolean;
 }
 
@@ -185,10 +188,27 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       const sprite = this.add.sprite(g.x, g.y, GATE_KEY);
       this.physics.add.existing(sprite, true);
       const body = sprite.body as Phaser.Physics.Arcade.StaticBody;
-      const owned = this.save.refrains.includes(g.requiresRefrain);
-      const gate: GateObj = { sprite, body, requiresRefrain: g.requiresRefrain, open: owned };
+      const kind: GateKind = g.kind ?? 'silence';
+      const req = { kind, requiresRefrain: g.requiresRefrain };
+      const gate: GateObj = {
+        sprite,
+        body,
+        requiresRefrain: g.requiresRefrain,
+        kind,
+        open: ownsRequirement(req, this.save.refrains),
+      };
       this.applyGateState(gate);
-      this.physics.add.collider(this.player.sprite, sprite, undefined, () => !gate.open);
+      // Block unless the player may pass *right now* (a chasm needs an active dash).
+      this.physics.add.collider(
+        this.player.sprite,
+        sprite,
+        undefined,
+        () =>
+          !canPassGate(req, {
+            refrains: this.save.refrains,
+            isDashing: this.player.isDashing,
+          }),
+      );
       this.gates.push(gate);
     }
 
@@ -806,17 +826,28 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   /** Open gates the player now qualifies for (called after gaining a Refrain). */
   private refreshGates(): void {
     for (const gate of this.gates) {
-      if (!gate.open && this.save.refrains.includes(gate.requiresRefrain)) {
-        gate.open = true;
+      const owned = ownsRequirement(
+        { kind: gate.kind, requiresRefrain: gate.requiresRefrain },
+        this.save.refrains,
+      );
+      if (owned !== gate.open) {
+        gate.open = owned;
         this.applyGateState(gate);
       }
     }
   }
 
   private applyGateState(gate: GateObj): void {
-    // Open gates become passable ghosts; closed gates are solid silence-voids.
-    gate.body.enable = !gate.open;
-    gate.sprite.setAlpha(gate.open ? 0.18 : 1);
+    if (gate.kind === 'chasm') {
+      // A fracture is always physically present; the dash-leap is resolved live in
+      // the collider. Owned reads as a faint, leapable shimmer; unowned as a void.
+      gate.body.enable = true;
+      gate.sprite.setAlpha(gate.open ? 0.45 : 1);
+    } else {
+      // Silence-void: opens to a passable ghost permanently once the Refrain is owned.
+      gate.body.enable = !gate.open;
+      gate.sprite.setAlpha(gate.open ? 0.18 : 1);
+    }
   }
 
   private nearestInteractable(radius: number): Interactable | null {

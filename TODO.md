@@ -81,7 +81,8 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 - [x] Glass Reliquary is now a full second region: its own ranged mini-boss (**The Reliquary Echo**) +
       a god-of-memory altar with its own relight-vs-rest choice
 - [ ] Ship one actual real asset file (sprite/audio) end-to-end to close the loop visually
-- [ ] A second Refrain (`light_dash`) + a path gated on it (extend the BOTW loop with a new grant)
+- [x] A second Refrain (`light_dash`) + a path gated on it — `chasm` gate kind (pure `systems/gating`):
+      a fracture in the Glass Reliquary you must **dash** across, walling off the `glass_vault` memory
 - [ ] Glass-native enemy variety; the Drowned Hymn as the no-combat traversal/puzzle region (Pillar 4)
 - [ ] CI: GitHub Action running `test + build + lint` on push
 - [ ] Bundle size: `manualChunks` / slimmer Phaser build before any ship

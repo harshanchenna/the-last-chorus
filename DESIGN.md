@@ -53,8 +53,13 @@ tidal. **Candidate for the low-combat traversal/atmosphere zone** (seed §3, Pil
 
 **Light is both weapon and key.** The player gathers **Refrains** — ability/upgrade fragments — that
 gate exploration BOTW-style. Each Refrain is also a piece of the lost song; collecting them is
-literally re-assembling a god's voice. First Refrain: _the Refrain of the Held Breath_ (cross
-silence-voids).
+literally re-assembling a god's voice.
+
+- **Refrain of the Held Breath** (`first_refrain`, grants `cross_silence`) — opens **silence-void**
+  gates permanently. The Ashchoir chancel doorway.
+- **Refrain of the Leap** (`light_dash`, grants `light_dash`) — lets you **dash across a `chasm`**: a
+  fracture in the world that the dash carries you over, but only mid-leap. Found in the Glass Reliquary,
+  walling off a memory-vault. Makes the dodge a traversal key, not just an i-frame (Pillar 3 × 4).
 
 ## Combat (v1 target)
 
@@ -89,3 +94,6 @@ seam so the shape can grow safely.
   (the world literally going silent), making it the strongest vertical-slice proof.
 - **Tension is currently enemy-count-driven** (placeholder) — real combat state will drive the
   melody→tension crossfade in M2.
+- **Two gate kinds, one pure rule** (`systems/gating.ts`) — `silence` (own the Refrain → opens) vs
+  `chasm` (own it _and_ be mid-dash). Keeping passage logic pure means a new traversal grant is data +
+  geometry, not engine surgery, and the dash earns a second role beyond dodging.
