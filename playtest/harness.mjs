@@ -68,14 +68,23 @@ export async function openGame({ headless = true } = {}) {
     if (m.type() === 'error') errors.push(m.text());
   });
   await page.goto(BASE_URL, { waitUntil: 'load' });
-  await waitBoot(page);
+  await waitTitle(page);
   // A real user gesture so audio/input are live and one render settles.
   await page.mouse.click(480, 270);
   await sleep(200);
   return { browser, page, errors };
 }
 
-/** Wait for the DEV hook + a booted scene with a known zone. */
+/** Wait for the title screen (Boot → Title) to be ready. */
+export async function waitTitle(page) {
+  await page.waitForFunction(
+    () => !!window.__lastChorusTitle && !!document.querySelector('canvas'),
+    undefined,
+    { timeout: 20000 },
+  );
+}
+
+/** Wait for the DEV hook + a booted GameScene with a known zone. */
 export async function waitBoot(page) {
   await page.waitForFunction(
     () => {
@@ -94,11 +103,25 @@ export async function waitBoot(page) {
   );
 }
 
-/** Wipe the persisted save and reboot for a deterministic fresh-start scenario. */
+/** From the title, start a fresh game (clears save) and wait for the GameScene. */
+export async function newGame(page) {
+  await page.evaluate(() => window.__lastChorusTitle.newGame());
+  await waitBoot(page);
+  await sleep(150);
+}
+
+/** From the title, continue the existing save and wait for the GameScene. */
+export async function continueGame(page) {
+  await page.evaluate(() => window.__lastChorusTitle.continueGame());
+  await waitBoot(page);
+  await sleep(150);
+}
+
+/** Wipe the persisted save and reboot to a clean title screen. */
 export async function resetSave(page) {
   await page.evaluate(() => localStorage.clear());
   await page.reload({ waitUntil: 'load' });
-  await waitBoot(page);
+  await waitTitle(page);
   await page.mouse.click(480, 270);
   await sleep(200);
 }

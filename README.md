@@ -17,7 +17,8 @@ npm install
 npm run dev
 ```
 
-Then open the URL Vite prints (default <http://localhost:5173>).
+Then open the URL Vite prints (default <http://localhost:5173>). You'll land on the **title screen** —
+choose **New Game** (or **Continue** if you have a save).
 
 ## Controls
 

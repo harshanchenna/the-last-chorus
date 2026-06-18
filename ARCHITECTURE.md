@@ -55,8 +55,8 @@ src/
 ### Boot flow
 
 `main.ts` → `createGameConfig()` (`core/game.ts`, pixel-art + 480×270 internal res) →
-`BootScene` (generate placeholder textures) → `GameScene` (load zone, spawn player, wire systems +
-dev tools).
+`BootScene` (load real assets / generate placeholder textures) → `TitleScene` (main menu: New Game /
+Continue) → `GameScene` (load zone, spawn player, wire systems + dev tools).
 
 ## Testing strategy
 

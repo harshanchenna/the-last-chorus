@@ -14,6 +14,7 @@ import {
   startServer,
   openGame,
   resetSave,
+  newGame,
   state,
   host,
   gotoZone,
@@ -39,6 +40,13 @@ try {
   const { page } = game;
   await resetSave(page);
   await clearShots();
+
+  // ---- 0. Title screen ----
+  console.log('\n[0] Title screen');
+  await shot(page, '00-title');
+  const onTitle = await page.evaluate(() => !!window.__lastChorusTitle);
+  check('boots to the title screen', onTitle);
+  await newGame(page);
 
   // ---- 1. Ashchoir: spawn ----
   console.log('\n[1] Ashchoir — spawn');

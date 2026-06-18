@@ -12,7 +12,7 @@ import {
   generateTileset,
   generateMote,
 } from '../assets/placeholders';
-import { ZONES, STARTING_ZONE } from '../data/zones';
+import { ZONES } from '../data/zones';
 import { spritesToLoad, audioToLoad } from '../assets/loader';
 
 export class BootScene extends Phaser.Scene {
@@ -48,6 +48,6 @@ export class BootScene extends Phaser.Scene {
     for (const zone of Object.values(ZONES)) {
       generateTileset(this, zone.id, zone.tilePalette.ground, zone.tilePalette.wall);
     }
-    this.scene.start('Game', { zoneId: STARTING_ZONE });
+    this.scene.start('Title');
   }
 }

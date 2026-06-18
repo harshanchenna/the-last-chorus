@@ -9,6 +9,7 @@
 import Phaser from 'phaser';
 import { RENDER } from './config';
 import { BootScene } from '../scenes/BootScene';
+import { TitleScene } from '../scenes/TitleScene';
 import { GameScene } from '../scenes/GameScene';
 
 export function createGameConfig(parent: string): Phaser.Types.Core.GameConfig {
@@ -34,7 +35,7 @@ export function createGameConfig(parent: string): Phaser.Types.Core.GameConfig {
         debug: false,
       },
     },
-    scene: [BootScene, GameScene],
+    scene: [BootScene, TitleScene, GameScene],
   };
 }
 

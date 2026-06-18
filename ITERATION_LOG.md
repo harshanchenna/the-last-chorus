@@ -475,3 +475,29 @@ assertable — every future cycle can now be validated end-to-end, visually.
 
 **Next** → ship one real asset file end-to-end (now visually verifiable), CI running test+build+lint
 (and optionally a headless playtest), and Glass-native enemy variety.
+
+---
+
+## 2026-06-18 — Cycle 14: title screen (MVP demo — the front door)
+
+**Built**
+
+- **`TitleScene`** — a quiet main menu: the title, the tagline _"the world is a dying song"_, drifting
+  light-motes, and **New Game / Continue** (Continue appears only when a save exists), plus a controls
+  hint. Boot flow is now **Boot → Title → Game**. New Game clears the save and starts in Ashchoir;
+  Continue resumes in the saved zone. Keyboard-navigated (↑/↓, Enter/Space/E); kept sparse (Pillar 5).
+- Playtest harness updated for the menu: `waitTitle` / `newGame` / `continueGame`, and the default
+  scenario now boots to the title, screenshots it, and starts a new game before the tour.
+
+**Why**
+
+First step of the MVP-demo goal: a demo needs a real front door and a New/Continue entry point. Framing
+the whole thing as _intro-to-the-world + tutorial + teaser_ starts here at the title.
+
+**Verified**
+
+- `npm run playtest` → 14/14 (added the title-boot check); the screenshot shows the menu rendering.
+  `npm test` → 73 passing. Build + lint clean.
+
+**Next** → fold in the intro/atmosphere + in-world tutorial, then the demo ending that teases the
+bigger picture.
