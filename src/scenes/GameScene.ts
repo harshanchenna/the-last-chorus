@@ -43,6 +43,8 @@ import {
   EXIT_KEY,
   REFRAIN_KEY,
   ALTAR_KEY,
+  GLOW_KEY,
+  VIGNETTE_KEY,
 } from '../assets/placeholders';
 import type { RefrainPickup, Altar } from '../data/zones';
 import { GAME_TITLE, COMBAT } from '../core/config';
@@ -69,6 +71,7 @@ interface GateObj {
 
 interface PickupObj {
   sprite: Phaser.GameObjects.Sprite;
+  glow: Phaser.GameObjects.Image;
   def: RefrainPickup;
 }
 
@@ -101,6 +104,8 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private pauseMenu!: PauseMenu;
   private interactPrompt!: InteractPrompt;
   private hintLine!: HintLine;
+  /** Additive bloom that follows the player — "light is the brightest thing on screen". */
+  private playerGlow!: Phaser.GameObjects.Image;
   /** First-run intro/tutorial flow (only on New Game, only in the starting zone). */
   private intro = false;
   private tutStep: 'prologue' | 'move' | 'dash' | 'gather' | 'cross' | 'done' = 'done';
@@ -130,6 +135,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private godmode = false;
   private altar: Altar | null = null;
   private altarSprite: Phaser.GameObjects.Sprite | null = null;
+  private altarGlow: Phaser.GameObjects.Image | null = null;
   /** Set while the player is standing at an altar deciding relight vs rest. */
   private pendingAltar: Altar | null = null;
   /** Set when the final altar choice is made — the ending fires when its epitaph closes. */
@@ -183,6 +189,26 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     // Ease into the zone (paired with the fade-out on walk-on transitions).
     cam.fadeIn(400, 5, 6, 10);
 
+    // Light is the brightest, most saturated thing on screen (asset spec §2): an
+    // additive bloom that follows the player and breathes.
+    this.player.sprite.setDepth(6);
+    this.playerGlow = this.add
+      .image(spawn.x, spawn.y, GLOW_KEY)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setTint(0xffd9a0)
+      .setDepth(5)
+      .setScale(2.6)
+      .setAlpha(0.9);
+    this.tweens.add({
+      targets: this.playerGlow,
+      scale: 3.1,
+      alpha: 0.65,
+      duration: 1500,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.inOut',
+    });
+
     // Interactables: rest-points (save) + lore objects — all data-driven (Pillar 1).
     this.interactables = [];
     for (const rp of zone.restPoints) {
@@ -234,6 +260,13 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     for (const pk of zone.refrainPickups) {
       if (this.save.pickups.includes(pk.id)) continue;
       const sprite = this.add.sprite(pk.x, pk.y, REFRAIN_KEY).setDepth(20);
+      const glow = this.add
+        .image(pk.x, pk.y, GLOW_KEY)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setTint(0xfff2c4)
+        .setDepth(19)
+        .setScale(1.5)
+        .setAlpha(0.85);
       this.tweens.add({
         targets: sprite,
         y: pk.y - 3,
@@ -242,7 +275,16 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
         duration: 750,
         ease: 'Sine.inOut',
       });
-      this.pickups.push({ sprite, def: pk });
+      this.tweens.add({
+        targets: glow,
+        scale: 2.1,
+        alpha: 0.45,
+        yoyo: true,
+        repeat: -1,
+        duration: 900,
+        ease: 'Sine.inOut',
+      });
+      this.pickups.push({ sprite, glow, def: pk });
     }
 
     // NPCs: rare, quiet figures. A faint, slow shimmer marks them as haunting.
@@ -276,9 +318,29 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.altar = zone.altar ?? null;
     this.pendingAltar = null;
     this.altarSprite = null;
+    this.altarGlow = null;
     if (this.altar) {
+      const awake = this.isAltarAwake();
+      this.altarGlow = this.add
+        .image(this.altar.x, this.altar.y, GLOW_KEY)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setTint(0xb89cf0)
+        .setDepth(19)
+        .setScale(awake ? 2.4 : 1.1)
+        .setAlpha(awake ? 0.7 : 0.18);
+      if (awake) {
+        this.tweens.add({
+          targets: this.altarGlow,
+          scale: 3,
+          alpha: 0.4,
+          yoyo: true,
+          repeat: -1,
+          duration: 1100,
+          ease: 'Sine.inOut',
+        });
+      }
       this.altarSprite = this.add.sprite(this.altar.x, this.altar.y, ALTAR_KEY).setDepth(20);
-      this.altarSprite.setAlpha(this.isAltarAwake() ? 1 : 0.3);
+      this.altarSprite.setAlpha(awake ? 1 : 0.3);
     }
 
     // Systems.
@@ -291,6 +353,14 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.audio.setZone(zone.ambientId);
 
     // UI + dev tooling.
+    // Screen-space vignette — darkens the edges so the light reads (Dead Cells aura).
+    this.add
+      .image(0, 0, VIGNETTE_KEY)
+      .setOrigin(0, 0)
+      .setScrollFactor(0)
+      .setDepth(8600)
+      .setName('vignette');
+
     this.hud = new Hud(this);
     this.bossBar = new BossBar(this);
     this.dialogue = new DialoguePanel(this);
@@ -474,6 +544,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     const equipped = equippedId ? getRefrain(equippedId).name : null;
     this.hud.update(this.player.lightFraction, this.save.refrains.length, equipped);
 
+    this.playerGlow.setPosition(this.player.position.x, this.player.position.y);
     this.updateInteractPrompt();
     this.updateTutorial(delta);
 
@@ -677,6 +748,18 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
         duration: 900,
         ease: 'Sine.inOut',
       });
+      if (this.altarGlow) {
+        this.altarGlow.setScale(2.4).setAlpha(0.7);
+        this.tweens.add({
+          targets: this.altarGlow,
+          scale: 3,
+          alpha: 0.4,
+          yoyo: true,
+          repeat: -1,
+          duration: 1100,
+          ease: 'Sine.inOut',
+        });
+      }
     }
   }
 
@@ -1037,6 +1120,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     if (!this.save.pickups.includes(pk.def.id)) this.save.pickups.push(pk.def.id);
     this.audio.sfx('pickup');
     this.refrainPickupFx(pk.sprite.x, pk.sprite.y);
+    pk.glow.destroy();
     pk.sprite.destroy();
     // Grants the Refrain, persists, opens any now-passable gates, and flashes.
     this.giveRefrain(pk.def.refrainId);

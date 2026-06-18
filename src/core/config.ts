@@ -8,10 +8,10 @@
 /** The one place the game's name lives (seed §0.7). */
 export const GAME_TITLE = 'The Last Chorus';
 
-/** Internal render resolution — 16:9, integer-scales to 960×540 / 1920×1080 (asset spec §1). */
+/** Internal render resolution — 16:9 at 960×540 for crisper, higher-detail art. */
 export const RENDER = {
-  width: 480,
-  height: 270,
+  width: 960,
+  height: 540,
   tileSize: 16,
 } as const;
 

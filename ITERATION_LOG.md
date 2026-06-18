@@ -677,3 +677,33 @@ player sprite, every cycle validated by the visual harness.
 
 **Next (post-MVP)** → real art/audio drop-ins (the pipeline is proven), Glass-native enemy variety,
 the Drowned Hymn as the no-combat region, and CI.
+
+---
+
+## 2026-06-18 — Cycle 21: feel pass — ethereal audio, 960×540, lighting
+
+**Built**
+
+- **Ambient audio rewrite** (was a buzzy hum): each stem is now a soft pad of two detuned **sine**
+  oscillators through a gentle low-pass + a generated convolver reverb, with a slow breathing tremolo,
+  at much lower gain. SFX get a crisper bus with a touch of the same reverb. Airy/sacred, not a buzzer.
+- **Resolution → 960×540** (`RENDER`) for crisper, higher-detail art (per request). Zones are 960×540
+  so a room reads at once; UI/scenes recompute from `this.scale`.
+- **Ethereal lighting (Dead Cells aura):** a screen-space **vignette**, and additive **bloom glows**
+  that follow the player (warm) and sit on Refrain pickups (gold), NPCs, and awake altars (violet),
+  pulsing — so light is the brightest, most saturated thing on screen (asset spec §2). Deeper, richer
+  per-zone palettes so the glows pop. (Glow/vignette are canvas radial textures from BootScene.)
+
+**Why**
+
+Direct response to play-test feedback: the sound was "a buzz hum" and the palette "not ethereal." This
+pass targets FEEL — a quiet, reverberant soundscape and a lit, moody, desaturated-with-glow look.
+
+**Verified**
+
+- `npm run playtest` → 20/20; screenshots show the player bloom + vignette + the deeper palettes.
+  `npm test` → 74. Build + lint clean. (Audio quality is for human ears — see next.)
+
+**Next** → AI-generated assets I drive myself: **PixelLab** (MCP) for top-down pixel-art sprites/tiles,
+**ElevenLabs** for real ambient music + SFX. Both need an API credential (then swap in via the manifest
+with zero gameplay-code changes). I can self-review art (screenshots); audio quality needs your ears.

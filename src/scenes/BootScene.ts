@@ -11,8 +11,11 @@ import {
   generateWorldPlaceholders,
   generateTileset,
   generateMote,
+  generateGlow,
+  generateVignette,
 } from '../assets/placeholders';
 import { ZONES } from '../data/zones';
+import { RENDER } from '../core/config';
 import { spritesToLoad, audioToLoad } from '../assets/loader';
 
 export class BootScene extends Phaser.Scene {
@@ -44,6 +47,8 @@ export class BootScene extends Phaser.Scene {
     generatePlaceholders(this);
     generateWorldPlaceholders(this);
     generateMote(this);
+    generateGlow(this);
+    generateVignette(this, RENDER.width, RENDER.height);
     // One tinted tileset per region so each dead god's domain reads distinctly.
     for (const zone of Object.values(ZONES)) {
       generateTileset(this, zone.id, zone.tilePalette.ground, zone.tilePalette.wall);

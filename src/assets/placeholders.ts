@@ -97,3 +97,43 @@ export function generateMote(scene: Phaser.Scene): void {
   g.generateTexture(MOTE_KEY, 2, 2);
   g.destroy();
 }
+
+/** Soft radial glow (white, tint per use) — additive bloom for light sources. */
+export const GLOW_KEY = 'fx.glow';
+/** Screen-space darkening at the edges — instant atmosphere (Dead Cells aura). */
+export const VIGNETTE_KEY = 'fx.vignette';
+
+export function generateGlow(scene: Phaser.Scene): void {
+  if (scene.textures.exists(GLOW_KEY)) return;
+  const s = 128;
+  const tex = scene.textures.createCanvas(GLOW_KEY, s, s);
+  if (!tex) return;
+  const c = tex.getContext();
+  const g = c.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  g.addColorStop(0, 'rgba(255,255,255,0.95)');
+  g.addColorStop(0.35, 'rgba(255,255,255,0.35)');
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  c.fillStyle = g;
+  c.fillRect(0, 0, s, s);
+  tex.refresh();
+}
+
+export function generateVignette(scene: Phaser.Scene, w: number, h: number): void {
+  if (scene.textures.exists(VIGNETTE_KEY)) return;
+  const tex = scene.textures.createCanvas(VIGNETTE_KEY, w, h);
+  if (!tex) return;
+  const c = tex.getContext();
+  const g = c.createRadialGradient(
+    w / 2,
+    h / 2,
+    Math.min(w, h) * 0.32,
+    w / 2,
+    h / 2,
+    Math.max(w, h) * 0.62,
+  );
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(1, 'rgba(3,4,8,0.72)');
+  c.fillStyle = g;
+  c.fillRect(0, 0, w, h);
+  tex.refresh();
+}
