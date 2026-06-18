@@ -6,7 +6,11 @@
  */
 
 import Phaser from 'phaser';
-import { generatePlaceholders, generateWorldPlaceholders } from '../assets/placeholders';
+import {
+  generatePlaceholders,
+  generateWorldPlaceholders,
+  generateTileset,
+} from '../assets/placeholders';
 import { STARTING_ZONE } from '../data/zones';
 
 export class BootScene extends Phaser.Scene {
@@ -17,6 +21,7 @@ export class BootScene extends Phaser.Scene {
   create(): void {
     generatePlaceholders(this);
     generateWorldPlaceholders(this);
+    generateTileset(this);
     this.scene.start('Game', { zoneId: STARTING_ZONE });
   }
 }

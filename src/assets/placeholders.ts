@@ -38,8 +38,31 @@ export function generatePlaceholders(scene: Phaser.Scene): void {
 /** Key used for a generic interactable / rest-point glyph placeholder. */
 export const REST_POINT_KEY = 'placeholder.rest_point';
 export const LORE_KEY = 'placeholder.lore';
+export const GATE_KEY = 'placeholder.gate';
+export const EXIT_KEY = 'placeholder.exit';
 
 export function generateWorldPlaceholders(scene: Phaser.Scene): void {
   makeBlock(scene, REST_POINT_KEY, 16, 16, 0x7fe3ff);
   makeBlock(scene, LORE_KEY, 16, 16, 0xc9a24a);
+  makeBlock(scene, GATE_KEY, 16, 16, 0x6a4f8a); // silence-void barrier (ability-gated)
+  makeBlock(scene, EXIT_KEY, 16, 16, 0x3c6f4a); // zone transition trigger
+}
+
+/** Tileset placeholder: index 0 = ground, 1 = wall. Drop-in for a real tilesheet. */
+export const TILESET_KEY = 'placeholder.tiles';
+
+export function generateTileset(scene: Phaser.Scene): void {
+  if (scene.textures.exists(TILESET_KEY)) return;
+  const t = 16;
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  // Tile 0 — ground: dark stone with a faint checker so motion reads.
+  g.fillStyle(0x161b22, 1).fillRect(0, 0, t, t);
+  g.fillStyle(0x1b212b, 1).fillRect(0, 0, t / 2, t / 2);
+  g.fillStyle(0x1b212b, 1).fillRect(t / 2, t / 2, t / 2, t / 2);
+  // Tile 1 — wall: lighter stone block with a beveled edge.
+  g.fillStyle(0x3a434f, 1).fillRect(t, 0, t, t);
+  g.fillStyle(0x4a5562, 1).fillRect(t, 0, t, 2);
+  g.fillStyle(0x262d36, 1).fillRect(t, t - 2, t, 2);
+  g.generateTexture(TILESET_KEY, t * 2, t);
+  g.destroy();
 }

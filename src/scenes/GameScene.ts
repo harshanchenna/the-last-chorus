@@ -22,6 +22,9 @@ import { DebugOverlay } from '../dev/DebugOverlay';
 import { DevConsole, type DevCommandHost } from '../dev/DevConsole';
 import { SaveSystem, defaultSave, type SaveData } from '../core/SaveSystem';
 import { Hud } from '../ui/Hud';
+import { ZoneMap } from '../world/ZoneMap';
+import { buildTileGrid } from '../world/mapgen';
+import { getMapSpec, TILE_SIZE } from '../data/maps';
 import { REST_POINT_KEY, LORE_KEY } from '../assets/placeholders';
 import { GAME_TITLE, COMBAT } from '../core/config';
 
@@ -48,6 +51,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private devConsole!: DevConsole;
   private saves!: SaveSystem;
   private hud!: Hud;
+  private map!: ZoneMap;
   private interactables: Interactable[] = [];
   private enemies: Enemy[] = [];
   private projectiles: Projectile[] = [];
@@ -74,14 +78,16 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     const spawn = this.save.zoneId === this.zoneId ? this.save.spawn : zone.defaultSpawn;
 
     this.cameras.main.setBackgroundColor(zone.bgColor);
-    this.physics.world.setBounds(0, 0, zone.bounds.width, zone.bounds.height);
-    this.cameras.main.setBounds(0, 0, zone.bounds.width, zone.bounds.height);
 
-    this.drawZoneFrame(zone.bounds.width, zone.bounds.height, zone.bgColor);
+    // Tile geometry + collision (data-driven; Tiled JSON drops in here later).
+    this.map = new ZoneMap(this, buildTileGrid(getMapSpec(this.zoneId)), TILE_SIZE);
+    this.physics.world.setBounds(0, 0, this.map.widthPx, this.map.heightPx);
+    this.cameras.main.setBounds(0, 0, this.map.widthPx, this.map.heightPx);
 
     // Player.
     this.player = new Player(this, spawn.x, spawn.y, this.save.lightCapacity);
     this.player.godmode = this.godmode;
+    this.physics.add.collider(this.player.sprite, this.map.layer);
     // Smooth follow with a small deadzone so micro-movements don't jitter the
     // camera, and round to whole pixels to keep the art crisp (top-down readability).
     const cam = this.cameras.main;
@@ -130,17 +136,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   }
 
   private addEnemy(enemyId: string, x: number, y: number): void {
-    this.enemies.push(new Enemy(this, getEnemy(enemyId), x, y));
-  }
-
-  /** A faint border so the bounded room is legible without a tileset yet. */
-  private drawZoneFrame(w: number, h: number, bg: number): void {
-    const g = this.add.graphics();
-    g.fillStyle(Phaser.Display.Color.IntegerToColor(bg).darken(20).color, 1);
-    g.fillRect(0, 0, w, h);
-    g.lineStyle(2, 0x2a3540, 1);
-    g.strokeRect(1, 1, w - 2, h - 2);
-    g.setDepth(-100);
+    const enemy = new Enemy(this, getEnemy(enemyId), x, y);
+    this.physics.add.collider(enemy.sprite, this.map.layer);
+    this.enemies.push(enemy);
   }
 
   private title(): void {
