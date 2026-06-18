@@ -561,3 +561,29 @@ framed around (Pillars 1 & 5).
 
 **Next** → polish: an audio SFX layer (blade/dash/pickup/rest), zone-entry cards + fade transitions,
 then ship one real asset end-to-end and a playtest bug-bash.
+
+---
+
+## 2026-06-18 — Cycle 17: transitions + zone-entry cards (demo polish)
+
+**Built**
+
+- **Fade transitions** between zones: walking onto an exit now fades the world out, then the next zone
+  fades back in (`cameras.main.fadeOut`/`fadeIn`) instead of a hard cut. Reads far more finished.
+- **Zone-entry card**: a quiet, fading `name + blurb` card centered on entry (e.g. _"The Glass
+  Reliquary / Fields of singing glass — a god of memory, shattered into brittle light."_). Doubles as
+  atmosphere and orientation. Skipped on the very first run (the prologue is the intro there).
+
+**Why**
+
+Hard cuts and unlabeled rooms read as a prototype. Fades + a sparse name card are cheap, high-impact
+polish that make the two-region demo feel like a finished slice (and quietly reinforce Pillar 1's
+"world tells its own story").
+
+**Verified**
+
+- `npm run playtest` → 19/19; the glass-overview screenshot now shows the zone card. `npm test` → 73.
+  Build + lint clean.
+
+**Next** → audio SFX layer (Pillar 2 feel), then ship one real asset end-to-end + a bundle split, then
+a playtest bug-bash.

@@ -85,8 +85,9 @@ try {
   check('an enemy is live for the combat read', s.enemies >= 1, `enemies ${s.enemies}`);
 
   // ---- 4. Glass Reliquary overview ----
-  console.log('\n[4] Glass Reliquary — overview');
+  console.log('\n[4] Glass Reliquary — overview (zone card)');
   await gotoZone(page, 'glass_reliquary');
+  await wait(550); // let the zone-name card fade in
   s = await state(page);
   await shot(page, '05-glass-overview');
   const fracture = s.gates.find((g) => g.kind === 'chasm');

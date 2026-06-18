@@ -179,6 +179,8 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     cam.startFollow(this.player.sprite, true, 0.12, 0.12);
     cam.setDeadzone(40, 28);
     cam.setRoundPixels(true);
+    // Ease into the zone (paired with the fade-out on walk-on transitions).
+    cam.fadeIn(400, 5, 6, 10);
 
     // Interactables: rest-points (save) + lore objects — all data-driven (Pillar 1).
     this.interactables = [];
@@ -299,6 +301,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
     this.title();
 
+    // A quiet zone-name card on entry (the prologue covers the very first run).
+    if (!this.intro) this.showZoneCard(zone.name, zone.blurb);
+
     // First-run: a short atmospheric prologue, then in-world tutorial beats.
     if (this.intro) {
       this.tutStep = 'prologue';
@@ -370,6 +375,40 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private isAltarAwake(): boolean {
     if (!this.altar) return false;
     return this.save.defeatedBosses.includes(this.altar.bossSpawnId);
+  }
+
+  /** A quiet, fading zone-name + blurb card shown on entry (atmosphere + clarity). */
+  private showZoneCard(name: string, blurb: string): void {
+    const cx = this.scale.width / 2;
+    const cy = this.scale.height / 2;
+    const nameText = this.add
+      .text(cx, cy - 6, name, { fontFamily: 'monospace', fontSize: '16px', color: '#cfa84a' })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(9200)
+      .setAlpha(0);
+    const blurbText = this.add
+      .text(cx, cy + 12, blurb, {
+        fontFamily: 'monospace',
+        fontSize: '8px',
+        color: '#aeb9c4',
+        align: 'center',
+        wordWrap: { width: this.scale.width - 120 },
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(9200)
+      .setAlpha(0);
+    const card = [nameText, blurbText];
+    this.tweens.add({ targets: card, alpha: 1, duration: 500, ease: 'Sine.out' });
+    this.tweens.add({
+      targets: card,
+      alpha: 0,
+      delay: 2000,
+      duration: 700,
+      ease: 'Sine.in',
+      onComplete: () => card.forEach((t) => t.destroy()),
+    });
   }
 
   private title(): void {
@@ -1002,7 +1041,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     for (const ex of this.exits) {
       if (Phaser.Math.Distance.Between(p.x, p.y, ex.sprite.x, ex.sprite.y) <= 14) {
         this.transitioning = true;
-        this.gotoZone(ex.toZone);
+        // Fade the world out, then hand off to the next zone (which fades back in).
+        this.cameras.main.fadeOut(280, 5, 6, 10);
+        this.cameras.main.once('camerafadeoutcomplete', () => this.gotoZone(ex.toZone));
         return;
       }
     }
