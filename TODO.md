@@ -45,12 +45,24 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 - [x] Proper lore reveal panel (`ui/DialoguePanel`) + collected-lore persisted to save
 - [x] Content-integrity tests: exits→zones, gates→refrains, lore objects→entries, spawns on ground
 
-## ▶ M4 — Refrains & gating _(current)_
+## ✅ M4 — Refrains & gating _(done)_
 
-- [ ] In-world Refrain pickup entity (currently only via dev `give`) + pickup FX/jingle
-- [ ] Refrain equip slot + HUD icon (`ui.refrain_slot` / `ui.refrain_icons`)
-- [ ] A second gated path that uses a different Refrain grant (e.g. `light_dash` across a gap)
-- [ ] Collected-lore / Refrain menu (pause screen)
+- [x] In-world Refrain pickup entity (bobbing fragment) with pickup FX (motes + flash); collected
+      pickups persist (save v2) and never respawn
+- [x] Refrain equip slot + count on the HUD (`ui.refrain_slot`)
+- [x] Full BOTW loop proven in-game: find the Refrain → its silence-gate opens → reach the secret +
+      the east passage to Glass Reliquary
+- [x] Save format versioned v1→v2 with a tested migration (adds `pickups`)
+- [ ] _Deferred:_ a second gate using a different grant (`light_dash` across a gap) — wants M5 geometry
+- [ ] _Deferred:_ pause/inventory menu listing collected lore + Refrains
+
+## ▶ M5 — Vertical slice: Ashchoir _(current)_
+
+- [ ] Biome identity: per-region tileset tint + an "unraveling" (ash creeping/eating sound) overlay
+- [ ] 2–3 enemy types live in the zone (wire `reliquary_warden`/`tideborn` or ashchoir-native foes)
+- [ ] A mini-boss (`miniboss_choirmaster`) with multi-phase telegraphs
+- [ ] Reactive audio in situ; environmental lore trail; a clear entrance + exit
+- [ ] Tune the whole loop so the region "sells the game"
 
 ## M5 — Vertical slice (Ashchoir)
 

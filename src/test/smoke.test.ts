@@ -91,4 +91,16 @@ describe('content integrity', () => {
       }
     }
   });
+
+  it('every Refrain pickup references a real Refrain and is reachable before its gate', () => {
+    for (const z of Object.values(ZONES)) {
+      for (const pk of z.refrainPickups) {
+        expect(REFRAINS[pk.refrainId], `${pk.id} → ${pk.refrainId}`).toBeDefined();
+        // A pickup that opens a gate must sit on the near (smaller-x) side of it,
+        // or the player could never reach it to open the gate (soft-lock guard).
+        const gate = z.gates.find((g) => g.requiresRefrain === pk.refrainId);
+        if (gate) expect(pk.x, `${pk.id} before ${gate.id}`).toBeLessThan(gate.x);
+      }
+    }
+  });
 });

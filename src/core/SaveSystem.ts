@@ -21,6 +21,8 @@ export interface SaveData {
   refrains: string[];
   /** Discovered lore entry ids. */
   lore: string[];
+  /** Collected in-world pickup ids (so they don't respawn). Added in v2. */
+  pickups: string[];
   /** Wall-clock ms when this was written. */
   savedAt: number;
 }
@@ -53,6 +55,7 @@ export function defaultSave(zoneId: string, spawn: { x: number; y: number }): Sa
     lightCapacity: 100,
     refrains: [],
     lore: [],
+    pickups: [],
     savedAt: 0,
   };
 }
@@ -66,9 +69,10 @@ export function migrate(raw: unknown): SaveData | null {
   const data = raw as Partial<SaveData>;
   if (typeof data.version !== 'number') return null;
 
-  // v1 is current; future versions add `if (data.version < N) { ...upgrade... }`.
   if (data.version > SAVE_VERSION) return null; // from a newer build; refuse rather than corrupt.
 
+  // v1 → v2: `pickups` did not exist; default it. (Filling via `?? []` below
+  // also covers it, but this is the explicit migration seam for future steps.)
   return {
     version: SAVE_VERSION,
     zoneId: data.zoneId ?? 'ashchoir',
@@ -76,6 +80,7 @@ export function migrate(raw: unknown): SaveData | null {
     lightCapacity: data.lightCapacity ?? 100,
     refrains: data.refrains ?? [],
     lore: data.lore ?? [],
+    pickups: data.pickups ?? [],
     savedAt: data.savedAt ?? 0,
   };
 }

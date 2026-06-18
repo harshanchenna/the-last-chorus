@@ -40,12 +40,14 @@ export const REST_POINT_KEY = 'placeholder.rest_point';
 export const LORE_KEY = 'placeholder.lore';
 export const GATE_KEY = 'placeholder.gate';
 export const EXIT_KEY = 'placeholder.exit';
+export const REFRAIN_KEY = 'placeholder.refrain';
 
 export function generateWorldPlaceholders(scene: Phaser.Scene): void {
   makeBlock(scene, REST_POINT_KEY, 16, 16, 0x7fe3ff);
   makeBlock(scene, LORE_KEY, 16, 16, 0xc9a24a);
   makeBlock(scene, GATE_KEY, 16, 16, 0x6a4f8a); // silence-void barrier (ability-gated)
   makeBlock(scene, EXIT_KEY, 16, 16, 0x3c6f4a); // zone transition trigger
+  makeBlock(scene, REFRAIN_KEY, 16, 16, 0xfff2c4); // a fragment of the song (light)
 }
 
 /** Tileset placeholder: index 0 = ground, 1 = wall. Drop-in for a real tilesheet. */

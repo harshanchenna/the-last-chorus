@@ -26,7 +26,8 @@ import { DialoguePanel } from '../ui/DialoguePanel';
 import { ZoneMap } from '../world/ZoneMap';
 import { buildTileGrid } from '../world/mapgen';
 import { getMapSpec, TILE_SIZE } from '../data/maps';
-import { REST_POINT_KEY, LORE_KEY, GATE_KEY, EXIT_KEY } from '../assets/placeholders';
+import { REST_POINT_KEY, LORE_KEY, GATE_KEY, EXIT_KEY, REFRAIN_KEY } from '../assets/placeholders';
+import type { RefrainPickup } from '../data/zones';
 import { GAME_TITLE, COMBAT } from '../core/config';
 
 interface Interactable {
@@ -45,6 +46,11 @@ interface GateObj {
   body: Phaser.Physics.Arcade.StaticBody;
   requiresRefrain: string;
   open: boolean;
+}
+
+interface PickupObj {
+  sprite: Phaser.GameObjects.Sprite;
+  def: RefrainPickup;
 }
 
 interface Projectile {
@@ -69,6 +75,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private interactables: Interactable[] = [];
   private exits: ZoneExitObj[] = [];
   private gates: GateObj[] = [];
+  private pickups: PickupObj[] = [];
   private transitioning = false;
   private enemies: Enemy[] = [];
   private projectiles: Projectile[] = [];
@@ -141,6 +148,22 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       this.gates.push(gate);
     }
 
+    // In-world Refrain pickups (skip any already collected — persisted in save).
+    this.pickups = [];
+    for (const pk of zone.refrainPickups) {
+      if (this.save.pickups.includes(pk.id)) continue;
+      const sprite = this.add.sprite(pk.x, pk.y, REFRAIN_KEY).setDepth(20);
+      this.tweens.add({
+        targets: sprite,
+        y: pk.y - 3,
+        yoyo: true,
+        repeat: -1,
+        duration: 750,
+        ease: 'Sine.inOut',
+      });
+      this.pickups.push({ sprite, def: pk });
+    }
+
     this.enemies = [];
     this.projectiles = [];
     this.spawnInitialEnemies(zone.defaultSpawn);
@@ -197,6 +220,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       this.player.update(this.controls, delta);
       if (this.controls.interactPressed()) this.handleInteract();
       this.handleAttacks(delta);
+      this.checkPickups();
       this.checkExits();
     } else {
       this.player.sprite.setVelocity(0, 0);
@@ -209,7 +233,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
     this.audio.update(delta);
     this.audio.setTension(this.combatTension());
-    this.hud.update(this.player.lightFraction);
+    const equippedId = this.save.refrains[0];
+    const equipped = equippedId ? getRefrain(equippedId).name : null;
+    this.hud.update(this.player.lightFraction, this.save.refrains.length, equipped);
 
     this.overlay.markInputConsumed(!consoleOpen);
     this.overlay.setExtraLines([
@@ -372,6 +398,43 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       const lore = getLore(near.refId);
       if (!this.save.lore.includes(lore.id)) this.save.lore.push(lore.id);
       this.dialogue.show(lore.title, lore.text);
+    }
+  }
+
+  /** Pick up a Refrain fragment on contact — grants the ability + opens gates. */
+  private checkPickups(): void {
+    if (this.pickups.length === 0) return;
+    const p = this.player.position;
+    for (const pk of this.pickups) {
+      if (Phaser.Math.Distance.Between(p.x, p.y, pk.sprite.x, pk.sprite.y) <= 16) {
+        this.collectPickup(pk);
+      }
+    }
+    this.pickups = this.pickups.filter((pk) => pk.sprite.active);
+  }
+
+  private collectPickup(pk: PickupObj): void {
+    if (!this.save.pickups.includes(pk.def.id)) this.save.pickups.push(pk.def.id);
+    this.refrainPickupFx(pk.sprite.x, pk.sprite.y);
+    pk.sprite.destroy();
+    // Grants the Refrain, persists, opens any now-passable gates, and flashes.
+    this.giveRefrain(pk.def.refrainId);
+  }
+
+  /** fx.refrain_pickup — a quiet burst of light motes rising from the fragment. */
+  private refrainPickupFx(x: number, y: number): void {
+    this.cameras.main.flash(180, 255, 242, 196);
+    for (let i = 0; i < 8; i++) {
+      const mote = this.add.rectangle(x, y, 2, 2, 0xfff2c4).setDepth(60);
+      const angle = (Math.PI * 2 * i) / 8;
+      this.tweens.add({
+        targets: mote,
+        x: x + Math.cos(angle) * 18,
+        y: y + Math.sin(angle) * 18 - 6,
+        alpha: 0,
+        duration: 520,
+        onComplete: () => mote.destroy(),
+      });
     }
   }
 

@@ -46,10 +46,27 @@ describe('migrate', () => {
     expect(migrate({ version: SAVE_VERSION + 1 })).toBeNull();
   });
 
-  it('fills defaults for a minimal v1 save', () => {
+  it('fills defaults for a minimal current-version save', () => {
     const m = migrate({ version: SAVE_VERSION });
     expect(m).not.toBeNull();
     expect(m!.lightCapacity).toBe(100);
     expect(m!.refrains).toEqual([]);
+  });
+
+  it('migrates a v1 save forward, adding pickups', () => {
+    const v1 = {
+      version: 1,
+      zoneId: 'ashchoir',
+      spawn: { x: 5, y: 6 },
+      lightCapacity: 80,
+      refrains: ['first_refrain'],
+      lore: ['ashchoir_pew'],
+      savedAt: 123,
+    };
+    const m = migrate(v1);
+    expect(m).not.toBeNull();
+    expect(m!.version).toBe(SAVE_VERSION);
+    expect(m!.pickups).toEqual([]); // new field defaulted
+    expect(m!.refrains).toEqual(['first_refrain']); // preserved
   });
 });

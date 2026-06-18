@@ -30,10 +30,11 @@ Then open the URL Vite prints (default <http://localhost:5173>).
 | Interact               | `E` (save at a rest-point, read lore) | B                  |
 | Dev console            | `` ` `` (backtick) to toggle          | —                  |
 
-> Status now: **M3 complete (zone & save)** — tile geometry with collision, walk-on zone transitions
-> (Ashchoir ⇄ Glass Reliquary), an ability-gated silence-void (open it with `give first_refrain` in the
-> dev console), a lore reveal panel, light-meter HUD, melee + ranged light attacks, telegraphing
-> enemies, death + rest-point respawn. Dash i-frames let you dodge through a telegraphed hit.
+> Status now: **M4 complete (Refrains & gating)** — the full come-back-stronger loop is playable with
+> zero dev commands: walk down from spawn to pick up the **Refrain of the Held Breath**, watch the
+> silence-void gate open, claim the secret beyond it, and cross east into the Glass Reliquary. Plus
+> everything before it: tile geometry + collision, zone transitions, lore panel, light-meter + Refrain
+> HUD, melee + ranged light attacks, telegraphing enemies, death + rest-point respawn, dash i-frames.
 
 ### Dev console commands
 

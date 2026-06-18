@@ -64,7 +64,7 @@ export const COMBAT = {
  * Save format version. Designed to be versioned from day one (seed §3).
  * Bump this whenever the SaveData shape changes and add a migration.
  */
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 /** localStorage key for the single persistent save object. */
 export const SAVE_KEY = 'the-last-chorus.save.v1';

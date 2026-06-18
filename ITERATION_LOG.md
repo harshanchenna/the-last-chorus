@@ -150,3 +150,34 @@ the candle, then continue east to cross into the Glass Reliquary.
 
 **Next** → M4: an in-world Refrain pickup entity + equip slot/HUD icon, and a second gate using a
 different grant. Then M5 (full Ashchoir vertical slice: mini-boss, biome identity).
+
+---
+
+## 2026-06-18 — Cycle 4: M4 Refrains & gating
+
+**Built**
+
+- In-world **Refrain pickup**: a bobbing light-fragment placed (data-driven, per zone) on the near side
+  of the silence-gate it opens. Walking into it grants the Refrain with a mote-burst + flash
+  (fx.refrain_pickup), opens the gate live, and **persists** so it never respawns.
+- Save format **v1 → v2**: added `pickups: string[]` with a tested migration (old saves load and
+  upgrade; collected pickups + refrains survive death).
+- HUD **Refrain slot**: a small framed icon + equipped name/count above the light meter
+  (asset spec ui.refrain_slot).
+- This closes the loop end-to-end **without dev commands**: from a fresh save you can find the Refrain,
+  watch the chancel silence-void open, claim the secret candle, and cross east into the Glass Reliquary.
+- Tests: save migration v1→v2; a soft-lock guard asserting every gate-opening pickup sits on the
+  reachable side of its gate.
+
+**Why**
+
+M4's point is the BOTW "come back stronger" loop as a _played_ experience, not a dev toggle. Versioning
+the save now (with a real migration) keeps the day-one promise that the format can grow safely.
+
+**Verified**
+
+- `npm test` → 53 passing. Build + lint clean. Boots HTTP 200.
+
+**Next** → M5: the Ashchoir vertical slice — biome identity (tileset tint + an "unraveling/ash eats
+sound" overlay), 2–3 enemy types, a multi-phase mini-boss, reactive audio + lore trail end-to-end. The
+proof-of-concept that sells the game.

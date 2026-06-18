@@ -36,6 +36,15 @@ export interface LoreObject {
   loreId: string;
 }
 
+/** An in-world Refrain fragment the player can pick up. */
+export interface RefrainPickup {
+  /** Unique id so a collected pickup never respawns. */
+  id: string;
+  x: number;
+  y: number;
+  refrainId: string;
+}
+
 export interface ZoneDef {
   id: string;
   name: string;
@@ -51,6 +60,7 @@ export interface ZoneDef {
   exits: ZoneExit[];
   gates: Gate[];
   loreObjects: LoreObject[];
+  refrainPickups: RefrainPickup[];
   /** AudioDirector zone id for the ambient stem set. */
   ambientId: string;
 }
@@ -72,6 +82,8 @@ export const ZONES: Record<string, ZoneDef> = {
       // The secret beyond the gate (Pillar 4 payoff).
       { x: 820, y: 272, loreId: 'ashchoir_secret' },
     ],
+    // The first Refrain sits on the near side of the silence-gate it opens (BOTW loop).
+    refrainPickups: [{ id: 'ashchoir.first_refrain', x: 260, y: 384, refrainId: 'first_refrain' }],
     ambientId: 'ashchoir',
   },
   glass_reliquary: {
@@ -85,6 +97,7 @@ export const ZONES: Record<string, ZoneDef> = {
     exits: [{ id: 'glass.west', x: 40, y: 272, toZone: 'ashchoir' }],
     gates: [],
     loreObjects: [{ x: 300, y: 150, loreId: 'glass_reflection' }],
+    refrainPickups: [],
     ambientId: 'glass_reliquary',
   },
   drowned_hymn: {
@@ -98,6 +111,7 @@ export const ZONES: Record<string, ZoneDef> = {
     exits: [],
     gates: [],
     loreObjects: [{ x: 300, y: 150, loreId: 'drowned_bell' }],
+    refrainPickups: [],
     ambientId: 'drowned_hymn',
   },
 };
