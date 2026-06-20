@@ -41,6 +41,11 @@ npm test && npm run build && npm run lint
 …and `npm run dev` must boot cleanly. `main` (and every commit) must let a stranger
 `npm install && npm run dev` and play within a minute. Never push a broken build.
 
+For the **visual playtest gate** (`npm run playtest`) you also need a Chromium binary:
+`npx playwright install chromium`. The full list of external tool dependencies — core
+toolchain, playtest, and the optional asset-generation tools (PixelLab, ElevenLabs) —
+lives in **[`TOOLING.md`](./TOOLING.md)**. Keep it current as new tools are adopted.
+
 ## How the code is organized
 
 ```

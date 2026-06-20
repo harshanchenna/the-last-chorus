@@ -16,6 +16,7 @@
     "gen:sprites": "node scripts/gen-sprites.mjs",
     "gen:tiles": "node scripts/gen-tiles.mjs",
     "gen:audio": "node scripts/gen-audio.mjs",
+    "gen:music": "node scripts/gen-music.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write ."
   },

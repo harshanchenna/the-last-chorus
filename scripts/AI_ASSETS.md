@@ -79,9 +79,26 @@ After a tile lands, set its `TILES[zone].floor/.wall` path in `manifest.ts`
    The reactive `AudioDirector` (base always on, melody in calm, tension in combat)
    then mixes the real stems with no other change.
 
-Ambient beds are the priority (the "background audio"). One-shot SFX currently use
-the synthesized `WebAudioToneBackend`; sampled SFX can be added later behind the
-same `AudioBackend` interface.
+**Composed background music (`gen:music`)** — the Sound-Effects API above makes
+_ambience_; for actual Dead-Cells-style _songs_ that drive the atmosphere, use the
+**Music API** (`/v1/music`) via `gen-music.mjs`. Same 3-stem contract and filenames
+(drop-in), but the stems become musical: `base` = a sustained pad, `melody` = the
+main composed exploration track, `tension` = a composed combat track.
+
+```bash
+ELEVENLABS_API_KEY=sk_... npm run gen:music                 # all zones
+ELEVENLABS_API_KEY=sk_... npm run gen:music ashchoir        # one zone
+ELEVENLABS_API_KEY=sk_... npm run gen:music ashchoir melody # one stem
+```
+
+> ⚠️ **The Music API requires a PAID ElevenLabs plan** (free keys return
+> `402 paid_plan_required`). The free tier covers only `gen:audio`
+> (sound-generation). `gen-music.mjs` is wired and ready — once the account is on a
+> paid plan, running it overwrites the zone stem files with composed songs and the
+> game picks them up with no code change.
+
+One-shot SFX currently use the synthesized `WebAudioToneBackend`; sampled SFX can be
+added later behind the same `AudioBackend` interface.
 
 ---
 
