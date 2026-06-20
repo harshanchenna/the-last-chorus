@@ -47,7 +47,7 @@ import {
   VIGNETTE_KEY,
 } from '../assets/placeholders';
 import type { RefrainPickup, Altar } from '../data/zones';
-import { GAME_TITLE, COMBAT } from '../core/config';
+import { GAME_TITLE, COMBAT, RENDER } from '../core/config';
 
 interface Interactable {
   sprite: Phaser.GameObjects.Sprite;
@@ -106,6 +106,10 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private hintLine!: HintLine;
   /** Additive bloom that follows the player — "light is the brightest thing on screen". */
   private playerGlow!: Phaser.GameObjects.Image;
+  /** World render layer (everything the zoomed main camera draws). */
+  private worldLayer!: Phaser.GameObjects.Layer;
+  /** Screen-space UI objects the (unzoomed) UI camera draws; the main camera ignores them. */
+  private uiObjects: Phaser.GameObjects.GameObject[] = [];
   /** First-run intro/tutorial flow (only on New Game, only in the starting zone). */
   private intro = false;
   private tutStep: 'prologue' | 'move' | 'dash' | 'gather' | 'cross' | 'done' = 'done';
@@ -163,6 +167,13 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
     this.cameras.main.setBackgroundColor(zone.bgColor);
 
+    // Two-camera split: a zoomed MAIN camera follows the player and renders the
+    // worldLayer; an unzoomed UI camera draws screen-space UI at 1× on top. This
+    // lets the higher-detail art read without scaling the HUD.
+    this.worldLayer = this.add.layer();
+    this.uiObjects = [];
+    const uiCam = this.cameras.add(0, 0, RENDER.width, RENDER.height);
+
     // Tile geometry + collision (data-driven; Tiled JSON drops in here later).
     this.map = new ZoneMap(
       this,
@@ -170,19 +181,32 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       tilesetKey(this.zoneId),
       TILE_SIZE,
     );
+    this.addWorld(this.map.layer);
     this.physics.world.setBounds(0, 0, this.map.widthPx, this.map.heightPx);
     this.cameras.main.setBounds(0, 0, this.map.widthPx, this.map.heightPx);
 
-    // The signature unraveling overlay (ash/glass/tide) — region atmosphere.
-    new Unraveling(this, zone.unraveling);
+    // The signature unraveling overlay (ash/glass/tide) — a screen-space drift on
+    // the UI camera so it isn't zoomed/scrolled with the world.
+    const unraveling = new Unraveling(this, zone.unraveling);
+    if (unraveling.root) this.addUi(unraveling.root);
 
-    // Player.
-    this.player = new Player(this, spawn.x, spawn.y, this.save.lightCapacity);
+    // Player (parented to the world layer so the zoomed camera draws it).
+    this.player = new Player(
+      this,
+      spawn.x,
+      spawn.y,
+      this.save.lightCapacity,
+      'player',
+      this.worldLayer,
+    );
     this.player.godmode = this.godmode;
     this.physics.add.collider(this.player.sprite, this.map.layer);
     // Smooth follow with a small deadzone so micro-movements don't jitter the
     // camera, and round to whole pixels to keep the art crisp (top-down readability).
+    // Zoom 2× so the higher-detail art reads (Dead Cells framing); bounds are set,
+    // so the world genuinely scrolls (~480×270 visible at a time).
     const cam = this.cameras.main;
+    cam.setZoom(2);
     cam.startFollow(this.player.sprite, true, 0.12, 0.12);
     cam.setDeadzone(40, 28);
     cam.setRoundPixels(true);
@@ -192,13 +216,15 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     // Light is the brightest, most saturated thing on screen (asset spec §2): an
     // additive bloom that follows the player and breathes.
     this.player.sprite.setDepth(6);
-    this.playerGlow = this.add
-      .image(spawn.x, spawn.y, GLOW_KEY)
-      .setBlendMode(Phaser.BlendModes.ADD)
-      .setTint(0xffd9a0)
-      .setDepth(5)
-      .setScale(2.6)
-      .setAlpha(0.9);
+    this.playerGlow = this.addWorld(
+      this.add
+        .image(spawn.x, spawn.y, GLOW_KEY)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setTint(0xffd9a0)
+        .setDepth(5)
+        .setScale(2.6)
+        .setAlpha(0.9),
+    );
     this.tweens.add({
       targets: this.playerGlow,
       scale: 3.1,
@@ -212,25 +238,29 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     // Interactables: rest-points (save) + lore objects — all data-driven (Pillar 1).
     this.interactables = [];
     for (const rp of zone.restPoints) {
-      const s = this.add.sprite(rp.x, rp.y, REST_POINT_KEY);
+      const s = this.addWorld(this.add.sprite(rp.x, rp.y, REST_POINT_KEY));
       this.interactables.push({ sprite: s, kind: 'rest', refId: rp.id });
     }
     for (const lo of zone.loreObjects) {
-      const s = this.add.sprite(lo.x, lo.y, LORE_KEY);
+      const s = this.addWorld(this.add.sprite(lo.x, lo.y, LORE_KEY));
       this.interactables.push({ sprite: s, kind: 'lore', refId: lo.loreId });
     }
 
     // Zone exits (walk-on transitions) + ability-gated barriers (Pillar 4).
     this.exits = zone.exits.map((ex) => ({
-      sprite: this.add.sprite(ex.x, ex.y, EXIT_KEY).setAlpha(0.8),
+      sprite: this.addWorld(this.add.sprite(ex.x, ex.y, EXIT_KEY).setAlpha(0.8)),
       toZone: ex.toZone,
     }));
     this.transitioning = false;
     this.gates = [];
     for (const g of zone.gates) {
-      const sprite = this.add.sprite(g.x, g.y, GATE_KEY);
+      const sprite = this.addWorld(this.add.sprite(g.x, g.y, GATE_KEY));
       this.physics.add.existing(sprite, true);
       const body = sprite.body as Phaser.Physics.Arcade.StaticBody;
+      // Pin the static body to a 16×16 footprint so larger gate art (32×32) keeps
+      // the original collision the gating + playtest checks depend on (x≈760, 16px).
+      body.setSize(16, 16);
+      body.updateFromGameObject();
       const kind: GateKind = g.kind ?? 'silence';
       const req = { kind, requiresRefrain: g.requiresRefrain };
       const gate: GateObj = {
@@ -259,14 +289,16 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.pickups = [];
     for (const pk of zone.refrainPickups) {
       if (this.save.pickups.includes(pk.id)) continue;
-      const sprite = this.add.sprite(pk.x, pk.y, REFRAIN_KEY).setDepth(20);
-      const glow = this.add
-        .image(pk.x, pk.y, GLOW_KEY)
-        .setBlendMode(Phaser.BlendModes.ADD)
-        .setTint(0xfff2c4)
-        .setDepth(19)
-        .setScale(1.5)
-        .setAlpha(0.85);
+      const sprite = this.addWorld(this.add.sprite(pk.x, pk.y, REFRAIN_KEY).setDepth(20));
+      const glow = this.addWorld(
+        this.add
+          .image(pk.x, pk.y, GLOW_KEY)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setTint(0xfff2c4)
+          .setDepth(19)
+          .setScale(1.5)
+          .setAlpha(0.85),
+      );
       this.tweens.add({
         targets: sprite,
         y: pk.y - 3,
@@ -290,7 +322,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     // NPCs: rare, quiet figures. A faint, slow shimmer marks them as haunting.
     this.npcEntities = [];
     for (const n of zone.npcs) {
-      const sprite = this.add.sprite(n.x, n.y, 'npc.wisp').setDepth(15);
+      const sprite = this.addWorld(this.add.sprite(n.x, n.y, 'npc.wisp').setDepth(15));
       this.tweens.add({
         targets: sprite,
         alpha: 0.55,
@@ -321,13 +353,15 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.altarGlow = null;
     if (this.altar) {
       const awake = this.isAltarAwake();
-      this.altarGlow = this.add
-        .image(this.altar.x, this.altar.y, GLOW_KEY)
-        .setBlendMode(Phaser.BlendModes.ADD)
-        .setTint(0xb89cf0)
-        .setDepth(19)
-        .setScale(awake ? 2.4 : 1.1)
-        .setAlpha(awake ? 0.7 : 0.18);
+      this.altarGlow = this.addWorld(
+        this.add
+          .image(this.altar.x, this.altar.y, GLOW_KEY)
+          .setBlendMode(Phaser.BlendModes.ADD)
+          .setTint(0xb89cf0)
+          .setDepth(19)
+          .setScale(awake ? 2.4 : 1.1)
+          .setAlpha(awake ? 0.7 : 0.18),
+      );
       if (awake) {
         this.tweens.add({
           targets: this.altarGlow,
@@ -339,7 +373,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
           ease: 'Sine.inOut',
         });
       }
-      this.altarSprite = this.add.sprite(this.altar.x, this.altar.y, ALTAR_KEY).setDepth(20);
+      this.altarSprite = this.addWorld(
+        this.add.sprite(this.altar.x, this.altar.y, ALTAR_KEY).setDepth(20),
+      );
       this.altarSprite.setAlpha(awake ? 1 : 0.3);
     }
 
@@ -353,14 +389,17 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.audio = new AudioDirector(audioBackend);
     this.audio.setZone(zone.ambientId);
 
-    // UI + dev tooling.
+    // UI + dev tooling. Every screen-space element is registered with addUi() so the
+    // zoomed main camera ignores it (drawn once, at 1×, by the UI camera).
     // Screen-space vignette — darkens the edges so the light reads (Dead Cells aura).
-    this.add
-      .image(0, 0, VIGNETTE_KEY)
-      .setOrigin(0, 0)
-      .setScrollFactor(0)
-      .setDepth(8600)
-      .setName('vignette');
+    this.addUi(
+      this.add
+        .image(0, 0, VIGNETTE_KEY)
+        .setOrigin(0, 0)
+        .setScrollFactor(0)
+        .setDepth(8600)
+        .setName('vignette'),
+    );
 
     this.hud = new Hud(this);
     this.bossBar = new BossBar(this);
@@ -370,6 +409,14 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.hintLine = new HintLine(this);
     this.overlay = new DebugOverlay(this);
     this.devConsole = new DevConsole(this);
+    // Route UI roots to the UI camera; the InteractPrompt floats in world-space.
+    for (const r of this.hud.roots) this.addUi(r);
+    for (const r of this.bossBar.roots) this.addUi(r);
+    this.addUi(this.dialogue.root);
+    this.addUi(this.pauseMenu.root);
+    this.addUi(this.hintLine.root);
+    this.addUi(this.overlay.root);
+    this.addWorld(this.interactPrompt.root);
 
     this.title();
 
@@ -397,6 +444,12 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
         state: () => this.debugState(),
       };
     }
+
+    // Split the two cameras: the zoomed main camera ignores screen-space UI; the
+    // UI camera ignores the world layer (and everything parented to it, including
+    // runtime FX). Done last so every create()-time object is registered.
+    this.cameras.main.ignore(this.uiObjects);
+    uiCam.ignore(this.worldLayer);
   }
 
   /**
@@ -430,14 +483,26 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     };
   }
 
+  /** Parent a world object to the layer the zoomed main camera renders. */
+  private addWorld<T extends Phaser.GameObjects.GameObject>(obj: T): T {
+    this.worldLayer.add(obj);
+    return obj;
+  }
+
+  /** Register a screen-space UI object (the main camera ignores these at create end). */
+  private addUi<T extends Phaser.GameObjects.GameObject>(obj: T): T {
+    this.uiObjects.push(obj);
+    return obj;
+  }
+
   private addEnemy(enemyId: string, x: number, y: number): void {
-    const enemy = new Enemy(this, getEnemy(enemyId), x, y);
+    const enemy = new Enemy(this, getEnemy(enemyId), x, y, this.worldLayer);
     this.physics.add.collider(enemy.sprite, this.map.layer);
     this.enemies.push(enemy);
   }
 
   private addBoss(bossId: string, x: number, y: number, spawnId?: string): void {
-    const boss = new Boss(this, getBoss(bossId), x, y);
+    const boss = new Boss(this, getBoss(bossId), x, y, this.worldLayer);
     this.physics.add.collider(boss.sprite, this.map.layer);
     this.bosses.push(boss);
     if (spawnId) this.bossSpawnId.set(boss, spawnId);
@@ -472,6 +537,8 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       .setDepth(9200)
       .setAlpha(0);
     const card = [nameText, blurbText];
+    // Shown during create() → the end-of-create ignore routes these to the UI camera.
+    card.forEach((t) => this.addUi(t));
     this.tweens.add({ targets: card, alpha: 1, duration: 500, ease: 'Sine.out' });
     this.tweens.add({
       targets: card,
@@ -485,15 +552,17 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
   private title(): void {
     const zone = getZone(this.zoneId);
-    this.add
-      .text(8, 8, `${GAME_TITLE} — ${zone.name}`, {
-        fontFamily: 'monospace',
-        fontSize: '8px',
-        color: '#cfa84a',
-      })
-      .setScrollFactor(0)
-      .setDepth(9000)
-      .setAlpha(0.7);
+    this.addUi(
+      this.add
+        .text(8, 8, `${GAME_TITLE} — ${zone.name}`, {
+          fontFamily: 'monospace',
+          fontSize: '8px',
+          color: '#cfa84a',
+        })
+        .setScrollFactor(0)
+        .setDepth(9000)
+        .setAlpha(0.7),
+    );
   }
 
   override update(_time: number, delta: number): void {
@@ -609,9 +678,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     }
     if (landed) this.audio.sfx('hit');
 
-    const slash = this.add
-      .arc(cx, cy, COMBAT.melee.radius, 0, 360, false, 0xfff2c4, 0.7)
-      .setDepth(40);
+    const slash = this.addWorld(
+      this.add.arc(cx, cy, COMBAT.melee.radius, 0, 360, false, 0xfff2c4, 0.7).setDepth(40),
+    );
     this.tweens.add({
       targets: slash,
       scale: 1.4,
@@ -627,7 +696,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.audio.sfx('cast');
     const aim = this.player.aimVector;
     const p = this.player.position;
-    const sprite = this.add.circle(p.x, p.y, 3, 0x9ad8ff, 1).setDepth(40);
+    const sprite = this.addWorld(this.add.circle(p.x, p.y, 3, 0x9ad8ff, 1).setDepth(40));
     this.projectiles.push({
       sprite,
       vx: aim.x * COMBAT.cast.speed,
@@ -803,7 +872,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   }
 
   private spawnEnemyProjectile(x: number, y: number, vx: number, vy: number, damage: number): void {
-    const sprite = this.add.circle(x, y, 3, 0xff7a3c, 1).setDepth(40);
+    const sprite = this.addWorld(this.add.circle(x, y, 3, 0xff7a3c, 1).setDepth(40));
     this.enemyProjectiles.push({ sprite, vx, vy, life: 2400, damage });
   }
 
@@ -1131,7 +1200,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
   private refrainPickupFx(x: number, y: number): void {
     this.cameras.main.flash(180, 255, 242, 196);
     for (let i = 0; i < 8; i++) {
-      const mote = this.add.rectangle(x, y, 2, 2, 0xfff2c4).setDepth(60);
+      const mote = this.addWorld(this.add.rectangle(x, y, 2, 2, 0xfff2c4).setDepth(60));
       const angle = (Math.PI * 2 * i) / 8;
       this.tweens.add({
         targets: mote,
@@ -1213,6 +1282,8 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       .setOrigin(0.5, 1)
       .setScrollFactor(0)
       .setDepth(9000);
+    // Created at runtime → ignore on the main camera so it draws once, at 1×.
+    this.cameras.main.ignore(t);
     this.time.delayedCall(2600, () => t.destroy());
   }
 

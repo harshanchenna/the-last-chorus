@@ -22,6 +22,11 @@ export class Unraveling {
     this.emitter = scene.add.particles(0, 0, MOTE_KEY, cfg).setScrollFactor(0).setDepth(9000);
   }
 
+  /** Root emitter (screen overlay) — routed to the UI camera; may be undefined. */
+  get root(): Phaser.GameObjects.GameObject | undefined {
+    return this.emitter;
+  }
+
   destroy(): void {
     this.emitter?.destroy();
   }

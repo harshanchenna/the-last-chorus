@@ -15,18 +15,27 @@ export class Boss {
   readonly sprite: Phaser.Physics.Arcade.Sprite;
   readonly def: BossDef;
   private readonly scene: Phaser.Scene;
+  private readonly layer?: Phaser.GameObjects.Layer;
   private readonly health: Health;
   private readonly ai: BossMemory;
   private dead = false;
 
-  constructor(scene: Phaser.Scene, def: BossDef, x: number, y: number) {
+  constructor(
+    scene: Phaser.Scene,
+    def: BossDef,
+    x: number,
+    y: number,
+    layer?: Phaser.GameObjects.Layer,
+  ) {
     this.scene = scene;
+    this.layer = layer;
     this.def = def;
     this.health = makeHealth(def.maxHealth);
     this.ai = createBossMemory();
     this.sprite = scene.physics.add.sprite(x, y, `enemy.${def.id}`);
     this.sprite.setCollideWorldBounds(true);
     this.sprite.setData('boss', this);
+    this.layer?.add(this.sprite);
   }
 
   get isDead(): boolean {
@@ -90,6 +99,7 @@ export class Boss {
     const { x, y } = this.sprite;
     for (let i = 0; i < 24; i++) {
       const mote = this.scene.add.rectangle(x, y, 3, 3, 0xfff2c4).setDepth(60);
+      this.layer?.add(mote);
       const angle = (Math.PI * 2 * i) / 24;
       const dist = 30 + Math.random() * 30;
       this.scene.tweens.add({

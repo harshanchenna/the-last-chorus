@@ -28,6 +28,11 @@ export class BossBar {
       .setVisible(false);
   }
 
+  /** Display objects — so the scene can route the boss bar to the UI camera. */
+  get roots(): Phaser.GameObjects.GameObject[] {
+    return [this.g, this.label];
+  }
+
   show(name: string, fraction: number, phase: string): void {
     const f = Phaser.Math.Clamp(fraction, 0, 1);
     this.g.setVisible(true).clear();

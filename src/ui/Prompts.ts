@@ -27,6 +27,11 @@ export class InteractPrompt {
       .setVisible(false);
   }
 
+  /** Root — world-space, so it rides the WORLD camera (floats above targets). */
+  get root(): Phaser.GameObjects.GameObject {
+    return this.text;
+  }
+
   /** Show the glyph in world-space, bobbing just above (x, y). */
   showAt(x: number, y: number): void {
     this.text.setPosition(x, y);
@@ -56,6 +61,11 @@ export class HintLine {
       .setScrollFactor(0)
       .setDepth(9400)
       .setVisible(false);
+  }
+
+  /** Root — screen-space, so it rides the UI camera. */
+  get root(): Phaser.GameObjects.GameObject {
+    return this.text;
   }
 
   show(msg: string): void {

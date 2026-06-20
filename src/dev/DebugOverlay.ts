@@ -32,6 +32,11 @@ export class DebugOverlay {
     });
   }
 
+  /** Root text — so the scene can route the overlay to the UI camera. */
+  get root(): Phaser.GameObjects.GameObject {
+    return this.text;
+  }
+
   /** Call at the start of the scene's update with the consumed-input flag. */
   markInputConsumed(hadInput: boolean): void {
     if (hadInput && this.lastKeyDownAt > 0) {

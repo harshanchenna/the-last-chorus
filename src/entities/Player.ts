@@ -16,6 +16,8 @@ import type { InputManager } from '../core/Input';
 export class Player {
   readonly sprite: Phaser.Physics.Arcade.Sprite;
   private readonly scene: Phaser.Scene;
+  /** Render layer for the world camera (so dash afterimages render there too). */
+  private readonly layer?: Phaser.GameObjects.Layer;
   private readonly textureKey: string;
   private readonly mover: MoverState;
   private readonly light: Health;
@@ -25,8 +27,16 @@ export class Player {
   /** When true (godmode), the player never takes damage. */
   godmode = false;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, maxLight: number, textureKey = 'player') {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    maxLight: number,
+    textureKey = 'player',
+    layer?: Phaser.GameObjects.Layer,
+  ) {
     this.scene = scene;
+    this.layer = layer;
     this.textureKey = textureKey;
     this.mover = createMoverState();
     this.light = makeHealth(maxLight);
@@ -36,6 +46,7 @@ export class Player {
     const body = this.sprite.body as Phaser.Physics.Arcade.Body;
     body.setSize(18, 18).setOffset(7, 10);
     this.sprite.setData('entity', this);
+    this.layer?.add(this.sprite);
   }
 
   /** Advance one frame. dtMs is Phaser's delta. */
@@ -75,6 +86,7 @@ export class Player {
       .setAlpha(0.5)
       .setTint(0xbfe6ff)
       .setDepth(this.sprite.depth - 1);
+    this.layer?.add(ghost);
     this.scene.tweens.add({
       targets: ghost,
       alpha: 0,

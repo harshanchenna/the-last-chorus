@@ -56,6 +56,11 @@ export class PauseMenu {
     return this.open;
   }
 
+  /** Root container — so the scene can route the journal to the UI camera. */
+  get root(): Phaser.GameObjects.GameObject {
+    return this.container;
+  }
+
   toggle(save: SaveData): void {
     if (this.open) this.hide();
     else this.show(save);

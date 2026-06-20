@@ -15,13 +15,21 @@ export class Enemy {
   readonly sprite: Phaser.Physics.Arcade.Sprite;
   readonly def: EnemyDef;
   private readonly scene: Phaser.Scene;
+  private readonly layer?: Phaser.GameObjects.Layer;
   private readonly health: Health;
   private readonly ai: AIMemory;
   private dead = false;
   private hpBar: Phaser.GameObjects.Graphics;
 
-  constructor(scene: Phaser.Scene, def: EnemyDef, x: number, y: number) {
+  constructor(
+    scene: Phaser.Scene,
+    def: EnemyDef,
+    x: number,
+    y: number,
+    layer?: Phaser.GameObjects.Layer,
+  ) {
     this.scene = scene;
+    this.layer = layer;
     this.def = def;
     this.health = makeHealth(def.maxHealth);
     this.ai = createAIMemory();
@@ -29,6 +37,8 @@ export class Enemy {
     this.sprite.setCollideWorldBounds(true);
     this.sprite.setData('enemy', this);
     this.hpBar = scene.add.graphics();
+    this.layer?.add(this.sprite);
+    this.layer?.add(this.hpBar);
   }
 
   get isDead(): boolean {
@@ -88,6 +98,7 @@ export class Enemy {
     const { x, y } = this.sprite;
     for (let i = 0; i < 6; i++) {
       const mote = this.scene.add.rectangle(x, y, 2, 2, 0xfff2c4).setDepth(50);
+      this.layer?.add(mote);
       const angle = (Math.PI * 2 * i) / 6;
       this.scene.tweens.add({
         targets: mote,

@@ -742,3 +742,39 @@ drive but **you judge the sound**.
 
 **Next** → your call on the audio (listen + tell me prompt tweaks), real boss/world-glyph art or
 tilesets if free credits remain, and animation frames.
+
+---
+
+## 2026-06-20 — Cycle 23: zoomed follow-cam + UI camera split (Goal A1)
+
+**Built**
+
+- **Two-camera split.** The MAIN camera now `setZoom(2)` and follows the player, so the higher-detail
+  art reads (Dead Cells framing) while the world genuinely scrolls (~480×270 visible at a time). A
+  second, unzoomed **UI camera** draws all screen-space UI at 1× on top.
+- **`worldLayer` (a Phaser Layer)** holds everything the zoomed camera draws — map, floor (next
+  cycle), player + glow + dash afterimages, enemies/bosses (+ their death motes), glyph sprites +
+  glows, projectiles, slash/cast FX, refrain-pickup motes, and the world-space interact prompt.
+  Entities (`Player`/`Enemy`/`Boss`) take an optional `layer` arg so FX they spawn at runtime join it
+  too. `uiCam.ignore(worldLayer)` then catches every world object, including ones created live.
+- **`uiObjects[]`** collects the finite screen-space UI (HUD, BossBar, dialogue, journal, hint line,
+  zone card, vignette, title, unraveling drift, debug overlay) via `addUi()`; `cameras.main.ignore()`
+  keeps the zoomed camera from drawing them. Runtime UI (`flash`) ignores the main camera inline.
+- UI classes expose `root`/`roots` getters; `Unraveling` exposes its emitter — so the scene can route
+  each to the UI camera without reaching into internals.
+- **Gate body pinned to 16×16** (`setSize`+`updateFromGameObject`) so future 32×32 gate art keeps the
+  collision footprint the gating + playtest checks depend on (x≈760).
+
+**Why**
+
+At 960×540 the whole room fit on screen, so any new tile/glyph detail rendered tiny. The zoom is the
+prerequisite for the real tilesets + glyphs coming next; doing the camera split first (and verifying
+it) de-risks the framing before art lands on top of it.
+
+**Verified**
+
+- `npm test` → 74. `npm run build` + `npm run lint` clean. `npm run playtest` → **20/20**, no page
+  errors. Reviewed shots 00–10: world is zoomed + scrolling, player centered; HUD / vignette / zone
+  card / journal render **once** at crisp 1×; glyphs float in world-space above their targets.
+
+**Next** → A2: real generated tilesets (floor TileSprite + textured walls) for both demo regions.

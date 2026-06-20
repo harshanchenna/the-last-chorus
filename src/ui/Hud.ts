@@ -29,6 +29,11 @@ export class Hud {
       .setDepth(9500);
   }
 
+  /** Display objects — so the scene can route the HUD to the UI camera. */
+  get roots(): Phaser.GameObjects.GameObject[] {
+    return [this.g, this.slotText];
+  }
+
   /**
    * @param fraction light remaining, 0..1
    * @param refrainCount number of Refrains collected

@@ -99,6 +99,13 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 - [x] Real player sprite shipped through the manifest; bundle split
 - [x] Full-arc playtest (20 checks) — title → prologue → tutorial → two regions → ending → title
 
+## Feel pass — environment + framing (in progress)
+
+- [x] Zoomed follow-cam (2×) + UI camera split — detail reads; HUD stays 1× (Cycle 23)
+- [ ] Real tilesets: floor TileSprite + textured walls, both demo regions (A2)
+- [ ] Real world-glyph art (rest/lore/exit/refrain/altar/gate) + collision-safe gate (A3)
+- [ ] Generate the ~10 PixelLab tile/glyph assets, review shots, refine (A4)
+
 ## Post-MVP backlog
 
 - [ ] Real art/audio drop-ins (pipeline proven): enemy sprites, ambient stems, SFX

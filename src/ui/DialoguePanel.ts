@@ -57,6 +57,11 @@ export class DialoguePanel {
     return this.open;
   }
 
+  /** Root container — so the scene can route the panel to the UI camera. */
+  get root(): Phaser.GameObjects.GameObject {
+    return this.container;
+  }
+
   show(title: string, body: string): void {
     this.titleText.setText(title);
     this.bodyText.setText(body);
