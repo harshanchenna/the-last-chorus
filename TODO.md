@@ -103,7 +103,16 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 
 - [x] Zoomed follow-cam (2×) + UI camera split — detail reads; HUD stays 1× (Cycle 23)
 - [x] Real tilesets: floor TileSprite + textured walls, both demo regions (Cycle 24)
-- [ ] Real world-glyph art (rest/lore/exit/refrain/altar/gate) + collision-safe gate (A3)
+- [x] 1080p internal render + UI logical space; sprite facing fix (Cycle 25)
+- [ ] Real world-glyph art (rest/lore/exit/refrain/altar/gate) — collision-safe gate done (A3)
+
+## Playtest-feedback queue
+
+- [x] Sprite faced wrong way on horizontal input — fixed (Cycle 25)
+- [x] Resolution → 1080p (Cycle 25)
+- [x] Tool-dependency doc for onboarding (`TOOLING.md`, Cycle 25)
+- [ ] **Composed background music** (Dead-Cells-style, not just ambience): pipeline ready
+      (`npm run gen:music`) but **needs a PAID ElevenLabs plan** — awaiting that decision.
 
 ## Post-MVP backlog
 
