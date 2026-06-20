@@ -9,6 +9,11 @@ dist-ssr/
 .vite/
 *.local
 
+# Local agent settings + secrets (never commit API keys)
+.claude/settings.local.json
+.env
+.env.*
+
 # Test / coverage
 coverage/
 

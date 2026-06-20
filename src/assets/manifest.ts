@@ -61,10 +61,11 @@ export const SPRITES: Record<string, SpriteAsset> = {
   'enemy.ashling': {
     kind: 'sprite',
     id: 'enemy.ashling',
-    frame: { w: 24, h: 24 },
+    // Bumped 24→32 to meet PixelLab's 32×32 minimum canvas for real art.
+    frame: { w: 32, h: 32 },
     anims: { idle: 4, walk: 4, telegraph: 3, attack: 4, hurt: 2, death: 5 },
     color: 0xff7a3c,
-    file: null,
+    file: 'assets/enemy_ashling.png',
   },
   'enemy.reliquary_warden': {
     kind: 'sprite',
@@ -72,7 +73,7 @@ export const SPRITES: Record<string, SpriteAsset> = {
     frame: { w: 32, h: 32 },
     anims: { idle: 4, walk: 4, telegraph: 3, attack: 4, hurt: 2, death: 5 },
     color: 0x9fd8e6,
-    file: null,
+    file: 'assets/enemy_reliquary_warden.png',
   },
   'enemy.tideborn': {
     kind: 'sprite',
@@ -88,7 +89,7 @@ export const SPRITES: Record<string, SpriteAsset> = {
     frame: { w: 64, h: 64 },
     anims: { idle: 4, walk: 4, telegraph: 4, attack: 5, hurt: 2, death: 8 },
     color: 0xe0a85a,
-    file: null,
+    file: 'assets/enemy_miniboss_choirmaster.png',
   },
   'enemy.reliquary_echo': {
     kind: 'sprite',
@@ -96,7 +97,7 @@ export const SPRITES: Record<string, SpriteAsset> = {
     frame: { w: 64, h: 64 },
     anims: { idle: 4, walk: 4, telegraph: 4, attack: 5, hurt: 2, death: 8 },
     color: 0x9fd8e6,
-    file: null,
+    file: 'assets/enemy_reliquary_echo.png',
   },
   'npc.wisp': {
     kind: 'sprite',
@@ -104,7 +105,7 @@ export const SPRITES: Record<string, SpriteAsset> = {
     frame: { w: 32, h: 32 },
     anims: { idle: 6 },
     color: 0xbfe6ff,
-    file: null,
+    file: 'assets/npc_wisp.png',
   },
 };
 
@@ -117,13 +118,13 @@ export const AUDIO: Record<string, AudioAsset> = {
     kind: 'audio',
     id: 'zone.ashchoir.ambient',
     stems: ['base', 'melody', 'tension'],
-    file: null,
+    file: 'assets/zone_ashchoir_ambient.mp3',
   },
   'zone.glass_reliquary.ambient': {
     kind: 'audio',
     id: 'zone.glass_reliquary.ambient',
     stems: ['base', 'melody', 'tension'],
-    file: null,
+    file: 'assets/zone_glass_reliquary_ambient.mp3',
   },
   'zone.drowned_hymn.ambient': {
     kind: 'audio',

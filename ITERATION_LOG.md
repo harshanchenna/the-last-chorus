@@ -707,3 +707,38 @@ pass targets FEEL — a quiet, reverberant soundscape and a lit, moody, desatura
 **Next** → AI-generated assets I drive myself: **PixelLab** (MCP) for top-down pixel-art sprites/tiles,
 **ElevenLabs** for real ambient music + SFX. Both need an API credential (then swap in via the manifest
 with zero gameplay-code changes). I can self-review art (screenshots); audio quality needs your ears.
+
+---
+
+## 2026-06-20 — Cycle 22: real AI assets — PixelLab sprites + ElevenLabs ambient
+
+**Built**
+
+- **Real sprites (PixelLab REST, `scripts/gen-sprites.mjs`):** `player` (hooded Lantern-bearer),
+  `enemy.ashling` (ember-wisp), `enemy.reliquary_warden` (glass sentinel), `npc.wisp`,
+  `enemy.miniboss_choirmaster` (fire-wreathed cantor, 64×64), `enemy.reliquary_echo` (broken-glass god,
+  64×64) — all generated, transparent-bg, wired through the manifest with **zero gameplay-code change**.
+  `enemy.ashling` bumped 24→32 (PixelLab's min canvas). I reviewed each in-game via the harness.
+- **Real ambient beds (ElevenLabs, `scripts/gen-audio.mjs`):** Ashchoir + Glass Reliquary, 3 in-sync
+  stems each (base/melody/tension).
+- **`PhaserAudioBackend`** — the missing playback half: plays the loaded real stems through Phaser's
+  sound system (looping, volume = the director's reactive mix), and delegates one-shot SFX to the
+  gentle synth. Zones without a real bed stay silent (no synth ambient). This is what makes the
+  generated audio actually audible while keeping the reactive `base/melody/tension` crossfade.
+
+**Why**
+
+Direct response to "only one sprite / colors not ethereal / audio not Dead Cells tier." Real,
+characterful pixel art + real recorded-quality ambient, dropped in through the manifest — the
+placeholder-first promise paying off at scale. I drive the art tool and self-review; the audio tool I
+drive but **you judge the sound**.
+
+**Verified**
+
+- `npm test` → 74 (guards updated: 960×540 render contract, ashling 32×32, real-asset path checks).
+  `npm run playtest` → 20/20, no page errors; screenshots show the real sprites under the bloom/vignette.
+  Build + lint clean. **PixelLab balance is $0 but free generations work** (used ~6); ElevenLabs free key
+  works (6 stems).
+
+**Next** → your call on the audio (listen + tell me prompt tweaks), real boss/world-glyph art or
+tilesets if free credits remain, and animation frames.

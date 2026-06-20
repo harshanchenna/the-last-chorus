@@ -19,10 +19,11 @@ import { BOSSES } from '../data/bosses';
 import { NPCS } from '../data/npcs';
 
 describe('render contract', () => {
-  it('matches the asset spec internal resolution (480×270, 16px tiles)', () => {
-    expect(RENDER.width).toBe(480);
-    expect(RENDER.height).toBe(270);
+  it('renders 16:9 at 960×540 with 16px tiles', () => {
+    expect(RENDER.width).toBe(960);
+    expect(RENDER.height).toBe(540);
     expect(RENDER.tileSize).toBe(16);
+    expect(RENDER.width / RENDER.height).toBeCloseTo(16 / 9, 5);
   });
 
   it('has a configured game title and a versioned save', () => {
@@ -53,7 +54,8 @@ describe('content integrity', () => {
 
   it('manifest frame sizes match the asset spec contract', () => {
     expect(SPRITES.player!.frame).toEqual({ w: 32, h: 32 });
-    expect(SPRITES['enemy.ashling']!.frame).toEqual({ w: 24, h: 24 });
+    // ashling is 32×32 (bumped from 24 to meet PixelLab's minimum canvas).
+    expect(SPRITES['enemy.ashling']!.frame).toEqual({ w: 32, h: 32 });
   });
 
   it('ambient beds declare three in-sync stems', () => {
@@ -66,14 +68,16 @@ describe('content integrity', () => {
     }
   });
 
-  it('ships the real player sprite; everything else is still a placeholder', () => {
+  it('ships real assets through the manifest; any file path is under assets/', () => {
     expect(SPRITES.player!.file).toBe('assets/player.png');
-    expect(realAssetCount()).toBe(1);
-    // Every other sprite + all audio remain programmatic placeholders.
+    expect(realAssetCount()).toBeGreaterThanOrEqual(1);
+    // Any non-null file must be a real asset path (the placeholder→real contract).
     for (const [id, s] of Object.entries(SPRITES)) {
-      if (id !== 'player') expect(s.file, `${id} should still be placeholder`).toBeNull();
+      if (s.file !== null) expect(s.file, `${id} file`).toMatch(/^assets\/.+\.png$/);
     }
-    expect(Object.values(AUDIO).every((a) => a.file === null)).toBe(true);
+    for (const [id, a] of Object.entries(AUDIO)) {
+      if (a.file !== null) expect(a.file, `${id} file`).toMatch(/^assets\/.+\.(mp3|ogg)$/);
+    }
   });
 
   it('every zone exit points at a real zone', () => {

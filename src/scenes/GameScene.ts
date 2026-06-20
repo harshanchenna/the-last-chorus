@@ -21,7 +21,7 @@ import { Boss } from '../entities/Boss';
 import { getBoss, BOSSES } from '../data/bosses';
 import { InputManager } from '../core/Input';
 import { AudioDirector } from '../systems/AudioDirector';
-import { WebAudioToneBackend } from '../systems/WebAudioBackend';
+import { PhaserAudioBackend } from '../systems/PhaserAudioBackend';
 import { DebugOverlay } from '../dev/DebugOverlay';
 import { DevConsole, type DevCommandHost } from '../dev/DevConsole';
 import { SaveSystem, defaultSave, type SaveData } from '../core/SaveSystem';
@@ -345,8 +345,9 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
     // Systems.
     this.controls = new InputManager(this);
-    // Audible synthesized placeholder stems; browsers gate audio behind a gesture.
-    const audioBackend = new WebAudioToneBackend();
+    // Real loaded ambient stems where present, synth SFX always; browsers gate
+    // audio behind a gesture, so resume on first input.
+    const audioBackend = new PhaserAudioBackend(this);
     this.input.keyboard?.once('keydown', () => audioBackend.resume());
     this.input.once('pointerdown', () => audioBackend.resume());
     this.audio = new AudioDirector(audioBackend);
