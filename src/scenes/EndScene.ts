@@ -9,7 +9,7 @@
 
 import Phaser from 'phaser';
 import { SaveSystem } from '../core/SaveSystem';
-import { GAME_TITLE } from '../core/config';
+import { GAME_TITLE, UI } from '../core/config';
 
 export class EndScene extends Phaser.Scene {
   constructor() {
@@ -17,7 +17,9 @@ export class EndScene extends Phaser.Scene {
   }
 
   create(): void {
-    const { width, height } = this.scale;
+    // Author in the UI logical space; an origin-anchored camera zoom scales it up to 1080p.
+    const { width, height } = UI;
+    this.cameras.main.setOrigin(0, 0).setZoom(UI.scale);
     this.cameras.main.setBackgroundColor('#05060a');
     this.cameras.main.fadeIn(900, 5, 6, 10);
 

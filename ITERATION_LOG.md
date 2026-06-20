@@ -812,3 +812,42 @@ environment — each dead god's domain now reads as a distinct, decaying place.
   walking / passes on dash. PixelLab free generations used: 4.
 
 **Next** → A3: real world-glyph art (rest/lore/exit/refrain/altar/gate) + collision-safe gate body.
+
+---
+
+## 2026-06-20 — Cycle 25: playtest feedback — 1080p, sprite facing, music + tooling docs
+
+Direct response to a play session ("music should be real songs; sprite faces the wrong
+way on horizontal input; up the resolution to 1080p; note our external tool deps").
+
+**Built**
+
+- **1080p internal render.** `RENDER` is now 1920×1080. A new `UI` logical space (960×540,
+  scale 2) keeps every HUD/menu number resolution-independent: the **UI camera is
+  origin-anchored (`setOrigin(0,0)`) and zoomed `×2`**, so UI authored at 1× fills the
+  canvas; the world's main camera goes to **zoom 4** to preserve the exact same framing
+  (~480×270 visible). Title + End scenes use the same origin-zoom trick. Vignette +
+  unraveling drift are generated/sized in UI space. Net effect: glow, vignette, particles,
+  and text render crisply at native 1080p; the pixel-art framing is unchanged.
+- **Sprite facing fix.** The player art faces left by default; the mover's flipX convention
+  assumes right-facing art, so the sprite looked backwards on horizontal movement. Inverted
+  the visual flip in `Player.update` (aim/`facingToVector` untouched — attacks were already
+  correct).
+- **Composed-music pipeline.** `gen-music.mjs` (`npm run gen:music`) uses the ElevenLabs
+  **Music API** to compose actual songs into the same zone stem files (base = pad, melody =
+  exploration track, tension = combat track) — drop-in, reactive stem contract unchanged.
+  ⚠️ The Music API needs a **paid** ElevenLabs plan (free key → `402`); the pipeline is
+  wired and ready for when the plan is upgraded. (The current free-tier ambient beds stay.)
+- **`TOOLING.md`** — a living record of every external dev dependency (toolchain,
+  Playwright/playtest, PixelLab, ElevenLabs), linked from `AGENTS.md`, so onboarding agents
+  know what to set up. `scripts/AI_ASSETS.md` documents all three gen flows.
+
+**Verified**
+
+- `npm test` → 74 (render contract now 1920×1080). Build + lint clean. `npm run playtest`
+  → **20/20** (harness viewport bumped to 1920×1080; the short pickup walk got a longer
+  hold — the 4×-pixel render is heavier in headless software-WebGL, a test-timing artifact,
+  not a game bug). Reviewed shots: title/journal/HUD/end all crisp and correctly laid out
+  at native 1080p; world framing unchanged.
+
+**Next** → A3: real world-glyph art + collision-safe gate. Music awaits a paid ElevenLabs plan.

@@ -5,6 +5,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI } from '../core/config';
 
 export class DialoguePanel {
   private container: Phaser.GameObjects.Container;
@@ -13,8 +14,8 @@ export class DialoguePanel {
   private open = false;
 
   constructor(scene: Phaser.Scene) {
-    const w = scene.scale.width;
-    const h = scene.scale.height;
+    const w = UI.width;
+    const h = UI.height;
     const panelW = w - 32;
     const panelH = 70;
     const x = 16;

@@ -4,6 +4,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI } from '../core/config';
 
 export class BossBar {
   private g: Phaser.GameObjects.Graphics;
@@ -14,10 +15,10 @@ export class BossBar {
   private readonly h = 5;
 
   constructor(scene: Phaser.Scene) {
-    this.w = scene.scale.width - 120;
+    this.w = UI.width - 120;
     this.g = scene.add.graphics().setScrollFactor(0).setDepth(9600).setVisible(false);
     this.label = scene.add
-      .text(scene.scale.width / 2, this.y - 9, '', {
+      .text(UI.width / 2, this.y - 9, '', {
         fontFamily: 'monospace',
         fontSize: '8px',
         color: '#e0c07a',

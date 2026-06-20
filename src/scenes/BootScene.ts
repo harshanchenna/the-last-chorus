@@ -19,7 +19,7 @@ import {
 } from '../assets/placeholders';
 import { ZONES } from '../data/zones';
 import { TILES } from '../assets/manifest';
-import { RENDER } from '../core/config';
+import { UI } from '../core/config';
 import { spritesToLoad, audioToLoad } from '../assets/loader';
 
 export class BootScene extends Phaser.Scene {
@@ -58,7 +58,9 @@ export class BootScene extends Phaser.Scene {
     generateWorldPlaceholders(this);
     generateMote(this);
     generateGlow(this);
-    generateVignette(this, RENDER.width, RENDER.height);
+    // Vignette is a UI-space overlay (drawn by the origin-zoomed UI camera), so it's
+    // sized to the UI logical space and scaled up to fill the screen with the rest of the UI.
+    generateVignette(this, UI.width, UI.height);
     // One floor texture + tinted tileset per region so each dead god's domain reads
     // distinctly. Floor first (the TileSprite ground plane), then the wall sheet
     // (which composes real wall art over a transparent ground cell when present).

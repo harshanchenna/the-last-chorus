@@ -8,6 +8,7 @@
 
 import Phaser from 'phaser';
 import { MOTE_KEY } from '../assets/placeholders';
+import { UI } from '../core/config';
 
 export type UnravelingType = 'ash' | 'glass' | 'tide' | null;
 
@@ -16,8 +17,10 @@ export class Unraveling {
 
   constructor(scene: Phaser.Scene, type: UnravelingType) {
     if (!type) return;
-    const w = scene.scale.width;
-    const h = scene.scale.height;
+    // The unraveling drift is a UI-space overlay (drawn by the origin-zoomed UI
+    // camera), so it spans the UI logical space and scales up with the rest of the UI.
+    const w = UI.width;
+    const h = UI.height;
     const cfg = CONFIGS[type](w, h);
     this.emitter = scene.add.particles(0, 0, MOTE_KEY, cfg).setScrollFactor(0).setDepth(9000);
   }

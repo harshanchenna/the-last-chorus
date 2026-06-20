@@ -48,7 +48,7 @@ import {
   VIGNETTE_KEY,
 } from '../assets/placeholders';
 import type { RefrainPickup, Altar } from '../data/zones';
-import { GAME_TITLE, COMBAT, RENDER } from '../core/config';
+import { GAME_TITLE, COMBAT, RENDER, UI } from '../core/config';
 
 interface Interactable {
   sprite: Phaser.GameObjects.Sprite;
@@ -173,7 +173,11 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     // lets the higher-detail art read without scaling the HUD.
     this.worldLayer = this.add.layer();
     this.uiObjects = [];
+    // UI camera authored in UI logical space (960×540): origin-anchored zoom scales
+    // that space up to fill the 1920×1080 canvas, so UI numbers stay resolution-independent.
     const uiCam = this.cameras.add(0, 0, RENDER.width, RENDER.height);
+    uiCam.setOrigin(0, 0);
+    uiCam.setZoom(UI.scale);
 
     // Tile geometry + collision (data-driven; Tiled JSON drops in here later).
     this.map = new ZoneMap(
@@ -213,10 +217,10 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
     this.physics.add.collider(this.player.sprite, this.map.layer);
     // Smooth follow with a small deadzone so micro-movements don't jitter the
     // camera, and round to whole pixels to keep the art crisp (top-down readability).
-    // Zoom 2× so the higher-detail art reads (Dead Cells framing); bounds are set,
-    // so the world genuinely scrolls (~480×270 visible at a time).
+    // Zoom 4× so the higher-detail art reads (Dead Cells framing) at 1080p; bounds are
+    // set, so the world genuinely scrolls (~480×270 visible at a time, as before).
     const cam = this.cameras.main;
-    cam.setZoom(2);
+    cam.setZoom(4);
     cam.startFollow(this.player.sprite, true, 0.12, 0.12);
     cam.setDeadzone(40, 28);
     cam.setRoundPixels(true);
@@ -526,8 +530,8 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
   /** A quiet, fading zone-name + blurb card shown on entry (atmosphere + clarity). */
   private showZoneCard(name: string, blurb: string): void {
-    const cx = this.scale.width / 2;
-    const cy = this.scale.height / 2;
+    const cx = UI.width / 2;
+    const cy = UI.height / 2;
     const nameText = this.add
       .text(cx, cy - 6, name, { fontFamily: 'monospace', fontSize: '16px', color: '#cfa84a' })
       .setOrigin(0.5)
@@ -540,7 +544,7 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
         fontSize: '8px',
         color: '#aeb9c4',
         align: 'center',
-        wordWrap: { width: this.scale.width - 120 },
+        wordWrap: { width: UI.width - 120 },
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -1281,12 +1285,12 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
 
   private flash(msg: string): void {
     const t = this.add
-      .text(this.scale.width / 2, this.scale.height - 24, msg, {
+      .text(UI.width / 2, UI.height - 24, msg, {
         fontFamily: 'monospace',
         fontSize: '8px',
         color: '#e8f4ff',
         backgroundColor: '#000000aa',
-        wordWrap: { width: this.scale.width - 40 },
+        wordWrap: { width: UI.width - 40 },
         align: 'center',
       })
       .setOrigin(0.5, 1)

@@ -7,7 +7,7 @@
  */
 
 import Phaser from 'phaser';
-import { GAME_TITLE } from '../core/config';
+import { GAME_TITLE, UI } from '../core/config';
 import { STARTING_ZONE } from '../data/zones';
 import { SaveSystem } from '../core/SaveSystem';
 
@@ -27,7 +27,10 @@ export class TitleScene extends Phaser.Scene {
   }
 
   create(): void {
-    const { width, height } = this.scale;
+    // Author in the UI logical space; an origin-anchored camera zoom scales it up to
+    // the 1080p canvas so the menu looks identical at any render resolution.
+    const { width, height } = UI;
+    this.cameras.main.setOrigin(0, 0).setZoom(UI.scale);
     this.cameras.main.setBackgroundColor('#05060a');
     this.saves = new SaveSystem(window.localStorage);
 
@@ -134,7 +137,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   private spawnTitleMotes(): void {
-    const { width, height } = this.scale;
+    const { width, height } = UI;
     for (let i = 0; i < 14; i++) {
       const x = ((i * 53) % width) + 8;
       const y = height - ((i * 37) % height);

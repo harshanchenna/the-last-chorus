@@ -10,6 +10,7 @@ import Phaser from 'phaser';
 import type { SaveData } from '../core/SaveSystem';
 import { REFRAINS } from '../data/refrains';
 import { LORE } from '../data/lore';
+import { UI } from '../core/config';
 
 export class PauseMenu {
   private container: Phaser.GameObjects.Container;
@@ -17,8 +18,8 @@ export class PauseMenu {
   private open = false;
 
   constructor(scene: Phaser.Scene) {
-    const w = scene.scale.width;
-    const h = scene.scale.height;
+    const w = UI.width;
+    const h = UI.height;
 
     const bg = scene.add.graphics();
     bg.fillStyle(0x05070a, 0.92).fillRect(0, 0, w, h);

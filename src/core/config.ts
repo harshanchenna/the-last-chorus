@@ -8,11 +8,23 @@
 /** The one place the game's name lives (seed §0.7). */
 export const GAME_TITLE = 'The Last Chorus';
 
-/** Internal render resolution — 16:9 at 960×540 for crisper, higher-detail art. */
+/** Internal render resolution — full 16:9 1080p so glow/vignette/UI render crisply. */
 export const RENDER = {
+  width: 1920,
+  height: 1080,
+  tileSize: 16,
+} as const;
+
+/**
+ * Logical UI coordinate space. The UI camera is origin-anchored and zoomed so this
+ * 960×540 space fills the 1920×1080 canvas — i.e. UI is authored at 1× here and the
+ * camera scales it up. Keeps every HUD/menu number stable across resolution changes.
+ */
+export const UI = {
   width: 960,
   height: 540,
-  tileSize: 16,
+  /** Zoom applied to the UI camera so UI.width fills RENDER.width. */
+  scale: 2,
 } as const;
 
 /** Player movement feel. Tuned in M1 — this is the sacred foundation (seed §3 / M1). */

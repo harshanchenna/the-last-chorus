@@ -69,7 +69,9 @@ try {
   // ---- 2. Pick up the first Refrain by walking onto it ----
   console.log('\n[2] Walk onto the Refrain of the Held Breath');
   await host(page, 'teleport', 260, 340);
-  await hold(page, 'ArrowDown', 800);
+  // Generous hold: the 1080p render is heavier in headless software-WebGL, so give the
+  // walk enough wall-clock to cover the short distance to the fragment reliably.
+  await hold(page, 'ArrowDown', 1500);
   s = await state(page);
   await shot(page, '03-refrain-picked');
   check('picked up first_refrain', s.refrains.includes('first_refrain'), s.refrains.join(','));

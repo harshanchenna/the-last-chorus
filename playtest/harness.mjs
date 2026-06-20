@@ -61,7 +61,7 @@ export async function startServer() {
 /** Launch Chromium and open the game; resolves once the scene has booted. */
 export async function openGame({ headless = true } = {}) {
   const browser = await chromium.launch({ headless });
-  const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
+  const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {

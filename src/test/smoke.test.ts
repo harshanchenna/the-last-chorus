@@ -19,9 +19,9 @@ import { BOSSES } from '../data/bosses';
 import { NPCS } from '../data/npcs';
 
 describe('render contract', () => {
-  it('renders 16:9 at 960×540 with 16px tiles', () => {
-    expect(RENDER.width).toBe(960);
-    expect(RENDER.height).toBe(540);
+  it('renders 16:9 at 1920×1080 with 16px tiles', () => {
+    expect(RENDER.width).toBe(1920);
+    expect(RENDER.height).toBe(1080);
     expect(RENDER.tileSize).toBe(16);
     expect(RENDER.width / RENDER.height).toBeCloseTo(16 / 9, 5);
   });

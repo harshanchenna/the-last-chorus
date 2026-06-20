@@ -9,6 +9,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI } from '../core/config';
 
 export class InteractPrompt {
   private text: Phaser.GameObjects.Text;
@@ -49,7 +50,7 @@ export class HintLine {
 
   constructor(scene: Phaser.Scene) {
     this.text = scene.add
-      .text(scene.scale.width / 2, 28, '', {
+      .text(UI.width / 2, 28, '', {
         fontFamily: 'monospace',
         fontSize: '8px',
         color: '#cfd8e2',

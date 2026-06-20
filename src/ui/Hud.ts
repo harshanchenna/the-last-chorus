@@ -5,6 +5,7 @@
  */
 
 import Phaser from 'phaser';
+import { UI } from '../core/config';
 
 export class Hud {
   private g: Phaser.GameObjects.Graphics;
@@ -16,7 +17,7 @@ export class Hud {
 
   constructor(scene: Phaser.Scene) {
     // Anchor near the bottom-left, above the screen edge.
-    this.y = scene.scale.height - 14;
+    this.y = UI.height - 14;
     this.g = scene.add.graphics().setScrollFactor(0).setDepth(9500);
     // Equipped-Refrain slot label, just above the light meter.
     this.slotText = scene.add
