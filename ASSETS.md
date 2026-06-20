@@ -24,7 +24,7 @@ own key. (This swap behavior is unit-tested in `src/test/loader.test.ts`.)
 ## Format summary
 
 - **Images:** PNG-24, transparent where noted, **no anti-aliasing**, authored at 1× on a **16px grid**.
-- **Internal resolution:** 480×270 (16:9). Tile size 16×16. Integer-scales to 960×540 / 1920×1080.
+- **Internal resolution:** 960×540 (16:9). Tile size 16×16. Integer-scales to 1920×1080.
 - **Sprites:** horizontal strip per animation (or atlas + JSON). Name to the logical ID + direction
   suffix: `player_walk_down.png`, `enemy_ashling_telegraph.png`.
 - **Audio:** `.ogg` primary (+ optional `.mp3`), ~ -16 LUFS, **seamless zero-cross loops**. Ambient
@@ -42,7 +42,7 @@ screen** in every region. Readability first.
 | Logical ID      | Frame | Animations (suggested frames)                                                      | Status              |
 | --------------- | ----- | ---------------------------------------------------------------------------------- | ------------------- |
 | `player`        | 32×32 | idle 4, walk 6, dash 3, attack_light 4, attack_cast 5, hurt 2, death 6, interact 3 | **real** (1 frame)¹ |
-| `enemy.ashling` | 24×24 | idle 4, walk 4, **telegraph 3**, attack 4, hurt 2, death 5                         | placeholder         |
+| `enemy.ashling` | 32×32 | idle 4, walk 4, **telegraph 3**, attack 4, hurt 2, death 5                         | **real** (1 frame)¹ |
 
 ¹ **Most character sprites now ship real art**, generated with PixelLab via `npm run gen:assets`
 (see [`scripts/AI_ASSETS.md`](./scripts/AI_ASSETS.md)): `player`, `enemy.ashling` (32×32),
