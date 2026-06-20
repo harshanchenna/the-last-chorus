@@ -54,7 +54,10 @@ export class Player {
     const result = stepMover(this.mover, input.sample(), dtMs);
     this.sprite.setVelocity(result.velocity.x, result.velocity.y);
     this.dashInvuln = result.invulnerable;
-    this.sprite.setFlipX(result.facing.flipX);
+    // The player art faces LEFT by default, but the mover's flipX convention assumes
+    // right-facing art (flipX=true ⇒ facing left). Invert here so the sprite mirrors
+    // to match the direction of travel; aim (facingToVector) is unaffected.
+    this.sprite.setFlipX(!result.facing.flipX);
 
     if (this.hurtIframes > 0) {
       this.hurtIframes -= dtMs;
