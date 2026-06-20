@@ -37,8 +37,22 @@ agent call it as native tools (`create_character`, `animate_character`,
    `public/assets/`, set the manifest `file`, and review the result in-game.
 
 Frame-size contract (must match `manifest.ts` / `ASSETS.md`): `player` 32×32,
-`enemy.ashling` 24×24, `enemy.reliquary_warden` 32×32, `enemy.tideborn` 32×32,
+`enemy.ashling` 32×32, `enemy.reliquary_warden` 32×32, `enemy.tideborn` 32×32,
 `enemy.miniboss_choirmaster` 64×64, `enemy.reliquary_echo` 64×64, `npc.wisp` 32×32.
+
+**REST scripts (no MCP needed)** — the agent drives these directly:
+
+```
+PIXELLAB_API_KEY=... npm run gen:sprites              # characters (gen-sprites.mjs)
+PIXELLAB_API_KEY=... npm run gen:sprites player       # one, by key
+PIXELLAB_API_KEY=... npm run gen:tiles                # floors + walls (gen-tiles.mjs)
+PIXELLAB_API_KEY=... npm run gen:tiles floor_ashchoir # one, by key
+```
+
+Tiles: floors are 64×64 seamless (tiled by a TileSprite under the map); walls are
+32×32 opaque, downscaled into the 16px wall cell at runtime by `generateTileset`.
+After a tile lands, set its `TILES[zone].floor/.wall` path in `manifest.ts`
+(null → `assets/<file>`); BootScene then loads it with zero gameplay-code change.
 
 ---
 

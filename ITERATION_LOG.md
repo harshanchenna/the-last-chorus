@@ -778,3 +778,37 @@ it) de-risks the framing before art lands on top of it.
   card / journal render **once** at crisp 1×; glyphs float in world-space above their targets.
 
 **Next** → A2: real generated tilesets (floor TileSprite + textured walls) for both demo regions.
+
+---
+
+## 2026-06-20 — Cycle 24: real tilesets — floor TileSprite + textured walls (Goal A2)
+
+**Built**
+
+- **`scripts/gen-tiles.mjs`** (`npm run gen:tiles`) — PixelLab pixflux generator for per-region
+  floors (64×64 seamless) + walls (32×32 opaque). Generated all four: Ashchoir (ash-buried flagstones
+  - charred ember-cracked masonry) and Glass Reliquary (cracked stained-glass floor + crystalline
+    cyan-lit wall). Reviewed each in-game.
+- **`TILES` manifest** (`src/assets/manifest.ts`) — same placeholder-first contract as sprites/audio:
+  `floor`/`wall` paths per region, `null` = programmatic fallback. BootScene loads non-null paths.
+- **Composited tileset** (`placeholders.ts`): when a real wall texture is loaded, `generateTileset`
+  builds the 32×16 sheet on a canvas — ground cell left **transparent**, the 32×32 wall art downscaled
+  (nearest-neighbour) into the 16px wall cell. `generateFloorTexture` provides the ground plane (real
+  floor if loaded, else a flat tinted 64×64 tile). No-art regions keep the exact old flat-block look.
+- **Floor TileSprite** (`GameScene`, depth −20) tiles the floor beneath the tilemap; the transparent
+  ground cell lets it show through. Collision still lives only on the tilemap wall tile → **no mechanic
+  change** (gating + playtest unaffected).
+
+**Why**
+
+The flat tinted checker was the biggest remaining feel gap now that the camera is zoomed. Real ground +
+wall art, dropped in through the manifest, is the placeholder-first pipeline paying off for the
+environment — each dead god's domain now reads as a distinct, decaying place.
+
+**Verified**
+
+- `npm test` → 74. Build + lint clean. `npm run playtest` → **20/20**, no page errors. Shots 00–10
+  show both regions with real composited floors + walls under the zoomed camera; gate still blocks
+  walking / passes on dash. PixelLab free generations used: 4.
+
+**Next** → A3: real world-glyph art (rest/lore/exit/refrain/altar/gate) + collision-safe gate body.

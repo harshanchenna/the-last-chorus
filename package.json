@@ -13,6 +13,8 @@
     "smoke": "vitest run src/test/smoke.test.ts",
     "playtest": "node playtest/run.mjs",
     "gen:assets": "node scripts/gen-player-sprite.mjs",
+    "gen:sprites": "node scripts/gen-sprites.mjs",
+    "gen:tiles": "node scripts/gen-tiles.mjs",
     "gen:audio": "node scripts/gen-audio.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write ."

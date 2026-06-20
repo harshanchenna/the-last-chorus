@@ -37,6 +37,7 @@ import { buildTileGrid } from '../world/mapgen';
 import { getMapSpec, TILE_SIZE } from '../data/maps';
 import {
   tilesetKey,
+  floorKey,
   REST_POINT_KEY,
   LORE_KEY,
   GATE_KEY,
@@ -180,6 +181,15 @@ export class GameScene extends Phaser.Scene implements DevCommandHost {
       buildTileGrid(getMapSpec(this.zoneId)),
       tilesetKey(this.zoneId),
       TILE_SIZE,
+    );
+    // Ground plane: a tiled floor texture beneath the tilemap. The wall tile's
+    // ground cell is transparent where real wall art is loaded, so this shows
+    // through; collision lives on the tilemap's wall tile only (no mechanic change).
+    this.addWorld(
+      this.add
+        .tileSprite(0, 0, this.map.widthPx, this.map.heightPx, floorKey(this.zoneId))
+        .setOrigin(0, 0)
+        .setDepth(-20),
     );
     this.addWorld(this.map.layer);
     this.physics.world.setBounds(0, 0, this.map.widthPx, this.map.heightPx);

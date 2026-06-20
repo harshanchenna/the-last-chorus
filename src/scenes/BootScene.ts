@@ -10,11 +10,15 @@ import {
   generatePlaceholders,
   generateWorldPlaceholders,
   generateTileset,
+  generateFloorTexture,
+  floorKey,
+  wallTexKey,
   generateMote,
   generateGlow,
   generateVignette,
 } from '../assets/placeholders';
 import { ZONES } from '../data/zones';
+import { TILES } from '../assets/manifest';
 import { RENDER } from '../core/config';
 import { spritesToLoad, audioToLoad } from '../assets/loader';
 
@@ -41,6 +45,12 @@ export class BootScene extends Phaser.Scene {
         this.load.audio(stem === 'one_shot' ? a.key : `${a.key}.${stem}`, file);
       }
     }
+    // Real tile art (floor + wall) where a manifest path exists; null stays a
+    // programmatic fallback. Loaded under the keys generateTileset/floor expect.
+    for (const tile of Object.values(TILES)) {
+      if (tile.floor) this.load.image(floorKey(tile.zoneId), tile.floor);
+      if (tile.wall) this.load.image(wallTexKey(tile.zoneId), tile.wall);
+    }
   }
 
   create(): void {
@@ -49,8 +59,11 @@ export class BootScene extends Phaser.Scene {
     generateMote(this);
     generateGlow(this);
     generateVignette(this, RENDER.width, RENDER.height);
-    // One tinted tileset per region so each dead god's domain reads distinctly.
+    // One floor texture + tinted tileset per region so each dead god's domain reads
+    // distinctly. Floor first (the TileSprite ground plane), then the wall sheet
+    // (which composes real wall art over a transparent ground cell when present).
     for (const zone of Object.values(ZONES)) {
+      generateFloorTexture(this, zone.id, zone.tilePalette.ground);
       generateTileset(this, zone.id, zone.tilePalette.ground, zone.tilePalette.wall);
     }
     this.scene.start('Title');

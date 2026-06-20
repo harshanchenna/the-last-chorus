@@ -32,7 +32,16 @@ export interface AudioAsset {
   file: string | null;
 }
 
-export type AssetDef = SpriteAsset | AudioAsset;
+export interface TileAsset {
+  kind: 'tileset';
+  zoneId: string;
+  /** Seamless floor texture, tiled across the ground — null = flat tinted fallback. */
+  floor: string | null;
+  /** Wall texture, downscaled into the wall tile cell — null = beveled-block fallback. */
+  wall: string | null;
+}
+
+export type AssetDef = SpriteAsset | AudioAsset | TileAsset;
 
 /**
  * Sprite assets. Frame sizes mirror the asset spec §3 exactly so produced art
@@ -134,6 +143,27 @@ export const AUDIO: Record<string, AudioAsset> = {
   },
   'music.title': { kind: 'audio', id: 'music.title', stems: ['one_shot'], file: null },
   'music.rest': { kind: 'audio', id: 'music.rest', stems: ['one_shot'], file: null },
+};
+
+/**
+ * Tileset assets — per region a seamless floor + a wall texture. Same
+ * placeholder-first contract: null = the engine composes a tinted fallback;
+ * set a path and BootScene loads it, with zero gameplay-code change. Only the
+ * two demo regions are listed (the floor TileSprite + transparent ground cell).
+ */
+export const TILES: Record<string, TileAsset> = {
+  ashchoir: {
+    kind: 'tileset',
+    zoneId: 'ashchoir',
+    floor: 'assets/floor_ashchoir.png',
+    wall: 'assets/wall_ashchoir.png',
+  },
+  glass_reliquary: {
+    kind: 'tileset',
+    zoneId: 'glass_reliquary',
+    floor: 'assets/floor_glass_reliquary.png',
+    wall: 'assets/wall_glass_reliquary.png',
+  },
 };
 
 /** True while every asset is still a placeholder (handy for the debug overlay). */

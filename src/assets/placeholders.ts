@@ -57,6 +57,35 @@ export function tilesetKey(zoneId: string): string {
   return `placeholder.tiles.${zoneId}`;
 }
 
+/** Texture key for a region's floor (real if loaded, else a flat fallback). */
+export function floorKey(zoneId: string): string {
+  return `tex.floor.${zoneId}`;
+}
+
+/** Texture key a real wall PNG loads under (BootScene); consumed by generateTileset. */
+export function wallTexKey(zoneId: string): string {
+  return `tex.wall.${zoneId}`;
+}
+
+/**
+ * Ensure a floor texture exists for the region. If BootScene already loaded a real
+ * floor under `floorKey(zoneId)`, this no-ops. Otherwise it builds a 64×64 flat
+ * tinted tile (with a faint checker) so the floor TileSprite always has something
+ * to draw — keeping the placeholder-first promise for the ground plane too.
+ */
+export function generateFloorTexture(scene: Phaser.Scene, zoneId: string, ground: number): void {
+  const key = floorKey(zoneId);
+  if (scene.textures.exists(key)) return; // real floor already loaded under this key
+  const s = 64;
+  const g = scene.make.graphics({ x: 0, y: 0 }, false);
+  g.fillStyle(ground, 1).fillRect(0, 0, s, s);
+  // A faint 32-px checker so scrolling reads, matching the placeholder tileset look.
+  g.fillStyle(lighten(ground, 5), 1).fillRect(0, 0, s / 2, s / 2);
+  g.fillStyle(lighten(ground, 5), 1).fillRect(s / 2, s / 2, s / 2, s / 2);
+  g.generateTexture(key, s, s);
+  g.destroy();
+}
+
 /** A small drifting particle texture for the "unraveling" overlay. */
 export const MOTE_KEY = 'placeholder.mote';
 
@@ -67,7 +96,15 @@ function darken(color: number, amt: number): number {
   return Phaser.Display.Color.IntegerToColor(color).darken(amt).color;
 }
 
-/** Generate a 2-tile tileset tinted to a region's palette (asset spec §2). */
+/**
+ * Generate the 2-tile tileset (tile0 = ground, tile1 = wall) for a region.
+ *
+ * If a real wall texture is loaded under `wallTexKey(zoneId)`, compose the 32×16
+ * sheet on a canvas: leave the ground cell TRANSPARENT (the floor TileSprite shows
+ * through it) and downscale the real 32×32 wall art into the 16×16 wall cell. With
+ * no real wall, fall back to the original flat tinted blocks (opaque ground), so
+ * fallback regions look exactly as before.
+ */
 export function generateTileset(
   scene: Phaser.Scene,
   zoneId: string,
@@ -77,6 +114,25 @@ export function generateTileset(
   const key = tilesetKey(zoneId);
   if (scene.textures.exists(key)) return;
   const t = 16;
+
+  // Real-wall path: transparent ground cell + downscaled wall art.
+  const wallKey = wallTexKey(zoneId);
+  if (scene.textures.exists(wallKey)) {
+    const tex = scene.textures.createCanvas(key, t * 2, t);
+    if (tex) {
+      const c = tex.getContext();
+      c.imageSmoothingEnabled = false;
+      const src = scene.textures.get(wallKey).getSourceImage() as CanvasImageSource;
+      const sw = scene.textures.get(wallKey).getSourceImage().width;
+      const sh = scene.textures.get(wallKey).getSourceImage().height;
+      // tile0 (0..15) stays transparent; tile1 (16..31) = wall, downscaled to 16×16.
+      c.drawImage(src, 0, 0, sw, sh, t, 0, t, t);
+      tex.refresh();
+      return;
+    }
+  }
+
+  // Fallback path: flat tinted blocks (original look).
   const g = scene.make.graphics({ x: 0, y: 0 }, false);
   // Tile 0 — ground: region color with a faint checker so motion reads.
   g.fillStyle(ground, 1).fillRect(0, 0, t, t);

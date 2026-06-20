@@ -102,9 +102,8 @@ advance a milestone until the previous one is genuinely playable and docs are cu
 ## Feel pass — environment + framing (in progress)
 
 - [x] Zoomed follow-cam (2×) + UI camera split — detail reads; HUD stays 1× (Cycle 23)
-- [ ] Real tilesets: floor TileSprite + textured walls, both demo regions (A2)
+- [x] Real tilesets: floor TileSprite + textured walls, both demo regions (Cycle 24)
 - [ ] Real world-glyph art (rest/lore/exit/refrain/altar/gate) + collision-safe gate (A3)
-- [ ] Generate the ~10 PixelLab tile/glyph assets, review shots, refine (A4)
 
 ## Post-MVP backlog
 
